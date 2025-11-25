@@ -27,7 +27,7 @@ $config['modules_locations'] = array(APPPATH.'modules/'=>'../modules/');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'http://192.168.1.3';
+$config['base_url'] = 'http://localhost/mis';
 
 /*
 |--------------------------------------------------------------------------

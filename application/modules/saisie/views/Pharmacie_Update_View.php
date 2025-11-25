@@ -26,7 +26,7 @@
                 <h3 class="card-title">Modification d'une Pharmacie</h3>
               </div>
               <!-- /.card-header -->
-              <!-- form start -->
+              <!-- form start --> 
 
 
          <div class="card-body">
@@ -41,6 +41,49 @@
                           <input type="text" name="DESCRIPTION" class="form-control" value="<?php echo $selected['DESCRIPTION']?>" id="DESCRIPTION">
                           <?php echo form_error('DESCRIPTION', '<div class="text-danger">', '</div>'); ?>
                       </div>
+                      <div class="form-group col-md-6">
+                          <label for="SELECTED_VALUE">
+                             Pharmacie qui est 
+                             <i class="text-danger"> *</i>
+                          </label>
+                          <select class="form-control"  onchange="affiche_value()" name="SELECTED_VALUE" id="SELECTED_VALUE">
+                          <option value="" >-- Sélectionner --</option>
+                         
+                          <option value="1" <?php echo $retVal = ($question == 1) ? "selected" : '' ; ?>>indépendant ?</option>
+                          <option value="2" <?php echo $retVal = ($question == 2) ? "selected" : '' ; ?>>dépendant d'une structure ?</option>
+
+                          
+                          </select>
+                          <?php echo form_error('SELECTED_VALUE', '<div class="text-danger">', '</div>'); ?>
+                       </div>
+
+                        <div class="form-group col-md-6" id="DIV_ID_STRUCTURE" style="<?=$style?>;">
+                          <label for="ID_STRUCTURE">
+                             Structure
+                             <i class="text-danger"> *</i>
+                          </label>
+                          <select class="form-control"  onchange="province(this)" name="ID_STRUCTURE" id="ID_STRUCTURE">
+                          <option value="" >-- Sélectionner --</option>
+                         
+
+                            <?php
+                          foreach ($structure as $key => $value) { 
+                            if ($value['ID_STRUCTURE'] == $selected['ID_STRUCTURE']) {
+                              ?>
+                            <option value="<?=$value['ID_STRUCTURE']?>" selected="selected"><?=$value['DESCRIPTION']?></option>
+                              <?php
+                            }
+                            else{
+                              ?>
+                              <option value="<?=$value['ID_STRUCTURE']?>"><?=$value['DESCRIPTION']?></option>
+                              <?php
+                            }
+                           } 
+                           ?>
+                          </select>
+                          <?php echo form_error('ID_STRUCTURE', '<div class="text-danger">', '</div>'); ?>
+                       </div>
+
                   
                        <div class="form-group col-md-6">
                           <label for="PROVINCE_ID">
@@ -143,4 +186,17 @@
             $('#COMMUNE_ID').html(data);
           });
      }
+     </script>
+
+      <script>
+       function affiche_value(){
+
+       var SELECTED_VALUE= $("#SELECTED_VALUE").val(); 
+
+       if (SELECTED_VALUE  === '2') {
+       document.getElementById('DIV_ID_STRUCTURE').style.display="block";
+       }else{
+       document.getElementById('DIV_ID_STRUCTURE').style.display="none";
+       }
+       }
      </script>

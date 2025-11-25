@@ -24,7 +24,7 @@
               <!-- /.card-header -->
               <!-- form start -->
 
- <div class="card-body table-responsive">
+ <div class="card-body table-responsive"> 
 
 
 
@@ -32,8 +32,23 @@
        <?php 
              if(!empty($this->session->flashdata('message')))
                echo $this->session->flashdata('message');
-               echo $this->table->generate($chamb);
+              // echo $this->table->generate($chamb);
             ?>
+
+             <table id="mytable" class="table table-bordered table-striped table-hover">
+                  <thead>
+                  <tr>
+                    <!-- <th>Affili&eacute;</th> -->
+                    <th>Nom</th>
+                    <th>Date D&eacute;but</th>
+                    <th>Nb Membre</th>
+                    <th>Status</th>
+                   
+                    <th>Options</th>
+                  </tr>
+                  </thead> 
+                  <tbody>
+                </table>
 
 
           </div> 
@@ -65,61 +80,62 @@
   include VIEWPATH.'includes/new_script.php';
   ?>
 <script>
-  $(document).ready(function(){ 
-    $('#message').delay(5000).hide('slow');
-    });
-</script>
+  $(document).ready(function()
+  {
+  liste();
+  });
 
-<script type="text/javascript">
-  $('#mytable').DataTable({
-   dom: 'Bfrtlip',
-   "paging":   true,
-    "ordering": true,
-    "info":     true,
-    "lengthChange": true,
-   buttons: [
-      {
-         extend: 'excel',
-         text: 'Excel',
-         className: 'btn btn-default',
-         exportOptions: {
-            columns: 'th:not(:last-child)'
-         }
+    function liste(argument) {
+
+    var row_count ="1000000";
+
+    $("#mytable").DataTable({
+      "processing":true,
+      "destroy" : true,
+      "serverSide":true,
+      "order":[],
+      "ajax":{
+        url:"<?php echo base_url('membre/Groupe/liste');?>",
+        type:"POST",
+        data:{},
       },
-      {
-         extend: 'pdfHtml5',
-         text: 'PDF',
-         className: 'btn btn-default',
-         exportOptions: {
-            columns: 'th:not(:last-child)'
-         }
-      }
-   ],
-   language: {
-                                "sProcessing":     "Traitement en cours...",
-                                "sSearch":         "Rechercher&nbsp;:",
-                                "sLengthMenu":     "Afficher _MENU_ &eacute;l&eacute;ments",
-                                "sInfo":           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-                                "sInfoEmpty":      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
-                                "sInfoFiltered":   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
-                                "sInfoPostFix":    "",
-                                "sLoadingRecords": "Chargement en cours...",
-                                "sZeroRecords":    "Aucun &eacute;l&eacute;ment &agrave; afficher",
-                                "sEmptyTable":     "Aucune donn&eacute;e disponible dans le tableau",
-                                "oPaginate": {
-                                    "sFirst":      "Premier",
-                                    "sPrevious":   "Pr&eacute;c&eacute;dent",
-                                    "sNext":       "Suivant",
-                                    "sLast":       "Dernier"
-                                },
-                                "oAria": {
-                                    "sSortAscending":  ": activer pour trier la colonne par ordre croissant",
-                                    "sSortDescending": ": activer pour trier la colonne par ordre d&eacute;croissant"
-                                }
-                        }
-});
-</script>
+      lengthMenu: [[10,50, 100, row_count], [10,50, 100, "All"]],
+      pageLength: 10,
+      "columnDefs":[{
+        "targets":[],
+        "orderable":false
+      }],
 
+      dom: 'Bfrtlip',
+      buttons: [
+      'pdf', 'excel','colvis'
+      ],
+      language: {
+        "sProcessing":     "Traitement en cours...",
+        "sSearch":         "Rechercher&nbsp;:",
+        "sLengthMenu":     "Afficher _MENU_ &eacute;l&eacute;ments",
+        "sInfo":           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+        "sInfoEmpty":      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
+        "sInfoFiltered":   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+        "sInfoPostFix":    "",
+        "sLoadingRecords": "Chargement en cours...",
+        "sZeroRecords":    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+        "sEmptyTable":     "Aucune donn&eacute;e disponible dans le tableau",
+        "oPaginate": {
+          "sFirst":      "Premier",
+          "sPrevious":   "Pr&eacute;c&eacute;dent",
+          "sNext":       "Suivant",
+          "sLast":       "Dernier"
+        },
+        "oAria": {
+          "sSortAscending":  ": activer pour trier la colonne par ordre croissant",
+          "sSortDescending": ": activer pour trier la colonne par ordre d&eacute;croissant"
+        }
+      }
+
+    });
+  }
+</script>
 
 </body>
 </html>

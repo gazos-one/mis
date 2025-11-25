@@ -7,7 +7,7 @@
           <div class="col-sm-8">
             <ol class="breadcrumb float-sm-right">
             <li><a class="btn <?php if($this->router->method == 'index') echo 'btn-primary';?> btn-sm" 
-     href="<?=base_url('saisie/Pharmacie/')?>">Ajouter</a></li>
+     href="<?=base_url('saisie/Pharmacie/ajouter')?>">Ajouter</a></li>
      <li><a class="btn <?php if($this->router->method == 'listing') echo 'btn-primary';?> btn-sm" 
      href="<?=base_url('saisie/Pharmacie/listing')?>">Liste</a></li>
             </ol>

@@ -23,8 +23,10 @@ class Pharmacie extends CI_Controller {
       $data['title']=' Pharmacie';
       $data['stitle']=' Pharmacie';
       $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
+      $data['structure'] = $this->Model->getListOrdertwo('masque_stucture_sanitaire',array(),'DESCRIPTION'); 
+
       $data['commune'] = $this->Model->getList('syst_communes');
-      $this->load->view('Pharmacie_Add_View',$data);
+      $this->listing();
     }
 
 
@@ -40,14 +42,39 @@ class Pharmacie extends CI_Controller {
   }
 
 
+   public function ajouter()
+    {
+      $data['title']=' Pharmacie';
+      $data['stitle']=' Pharmacie';
+      $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
+      $data['structure'] = $this->Model->getListOrdertwo('masque_stucture_sanitaire',array(),'DESCRIPTION'); 
+
+      $data['style'] = "display:none";
+      $data['commune'] = $this->Model->getList('syst_communes');
+      $this->load->view('Pharmacie_Add_View',$data);
+    }
+
+
+
     public function add()
   {
 
   $DESCRIPTION=$this->input->post('DESCRIPTION');
   $PROVINCE_ID=$this->input->post('PROVINCE_ID');
   $COMMUNE_ID=$this->input->post('COMMUNE_ID');
+  $SELECTED_VALUE=$this->input->post('SELECTED_VALUE');
+  $ID_STRUCTURE=$this->input->post('ID_STRUCTURE');
+
+
 
    $this->form_validation->set_rules('DESCRIPTION', 'Nom', 'required');
+   $this->form_validation->set_rules('SELECTED_VALUE', 'Champ', 'required');
+
+   if ($SELECTED_VALUE == 2) {
+   
+   $this->form_validation->set_rules('ID_STRUCTURE', 'Structure', 'required');
+
+   }
    $this->form_validation->set_rules('PROVINCE_ID', 'Province', 'required');
    $this->form_validation->set_rules('COMMUNE_ID', 'Commune', 'required');
 
@@ -57,15 +84,28 @@ class Pharmacie extends CI_Controller {
                             <button type='button' class='close' data-dismiss='alert'>&times;</button>
                       </div>";
     $this->session->set_flashdata(array('message'=>$message));
-    $data['title']=' Pharmacie';
-    $data['stitle']=' Pharmacie';
-    $data['province'] = $this->Model->getListOrdertwo('syst_provinces'); 
+   
+   $data['title']=' Pharmacie';
+      $data['stitle']=' Pharmacie';
+      $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
+      $data['structure'] = $this->Model->getListOrdertwo('masque_stucture_sanitaire',array(),'DESCRIPTION'); 
+      $data['style'] = "display:none";
+
+      if ($SELECTED_VALUE == 2) {
+   
+   $data['style'] = "display:block";
+
+   }
+
     $data['commune'] = $this->Model->getList('syst_communes');
+    $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
+   
     $this->load->view('Pharmacie_Add_View',$data);
    }
    else{
 
     $datas=array('DESCRIPTION'=>$DESCRIPTION,
+                 'ID_STRUCTURE'=>$ID_STRUCTURE,
                  'PROVINCE_ID'=>$PROVINCE_ID,
                  'COMMUNE_ID'=>$COMMUNE_ID,
                 );
@@ -169,7 +209,15 @@ class Pharmacie extends CI_Controller {
       $selected = $this->Model->getOne('consultation_pharmacie',array('ID_PHARMACIE'=>$id)); 
       $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
       $data['commune'] = $this->Model->getListOrdertwo('syst_communes',array('PROVINCE_ID'=>$selected['PROVINCE_ID']),'COMMUNE_NAME');
+      $data['structure'] = $this->Model->getListOrdertwo('masque_stucture_sanitaire',array(),'DESCRIPTION'); 
       $data['selected'] = $this->Model->getOne('consultation_pharmacie',array('ID_PHARMACIE'=>$id)); 
+      $data['style'] = "display:none";
+      $data['question'] = 1;
+      if (!empty($data['selected']['ID_STRUCTURE'])) {
+      $data['style'] = "display:block";
+      $data['question'] = 2;
+
+       } 
       $this->load->view('Pharmacie_Update_View',$data);
     }
 
@@ -180,33 +228,58 @@ class Pharmacie extends CI_Controller {
   $DESCRIPTION=$this->input->post('DESCRIPTION');
   $PROVINCE_ID=$this->input->post('PROVINCE_ID');
   $COMMUNE_ID=$this->input->post('COMMUNE_ID');
-  $ID_PHARMACIE=$this->input->post('ID_PHARMACIE');
+  $SELECTED_VALUE=$this->input->post('SELECTED_VALUE');
+
+  $ID_PHARMACIE=$this->input->post('ID_PHARMACIE'); $SELECTED_VALUE=$this->input->post('SELECTED_VALUE');
+  $ID_STRUCTURE=$this->input->post('ID_STRUCTURE');
+
+
 
    $this->form_validation->set_rules('DESCRIPTION', 'Nom', 'required');
+   $this->form_validation->set_rules('SELECTED_VALUE', 'Champ', 'required');
+
+   if ($SELECTED_VALUE == 2) {
+   
+   $this->form_validation->set_rules('ID_STRUCTURE', 'Structure', 'required');
+
+   }
    $this->form_validation->set_rules('PROVINCE_ID', 'Province', 'required');
    $this->form_validation->set_rules('COMMUNE_ID', 'Commune', 'required');
-
    if ($this->form_validation->run() == FALSE){
     $message = "<div class='alert alert-danger' id='message'>
     Pharmacie non enregistr&eacute;
                             <button type='button' class='close' data-dismiss='alert'>&times;</button>
                       </div>";
     $this->session->set_flashdata(array('message'=>$message));
-      $data['title']=' Pharmacie';
+     $data['title']=' Pharmacie';
       $data['stitle']=' Pharmacie';
-      $selected = $this->Model->getOne('consultation_pharmacie',array('ID_PHARMACIE'=>$ID_PHARMACIE)); 
+      $selected = $this->Model->getOne('consultation_pharmacie',array('ID_PHARMACIE'=>$id)); 
       $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
       $data['commune'] = $this->Model->getListOrdertwo('syst_communes',array('PROVINCE_ID'=>$selected['PROVINCE_ID']),'COMMUNE_NAME');
-      $data['selected'] = $this->Model->getOne('consultation_pharmacie',array('ID_PHARMACIE'=>$ID_PHARMACIE)); 
+      $data['structure'] = $this->Model->getListOrdertwo('masque_stucture_sanitaire',array(),'DESCRIPTION'); 
+      $data['selected'] = $this->Model->getOne('consultation_pharmacie',array('ID_PHARMACIE'=>$id)); 
+      $data['style'] = "display:none";
+      $data['question'] = 1;
+      if (!empty($data['selected']['ID_STRUCTURE']))
+      {
+      $data['style'] = "display:block";
+      $data['question'] = 2;
+      } 
       $this->load->view('Pharmacie_Update_View',$data);
    }
    else{
+     if ($SELECTED_VALUE == 1) 
+     {
+   
+     $ID_STRUCTURE='';
 
-    $datas=array('DESCRIPTION'=>$DESCRIPTION,
+     }
+     
+     $datas=array('DESCRIPTION'=>$DESCRIPTION,
+                 'ID_STRUCTURE'=>$ID_STRUCTURE,
                  'PROVINCE_ID'=>$PROVINCE_ID,
                  'COMMUNE_ID'=>$COMMUNE_ID,
-                );
-
+                 );
     $this->Model->update('consultation_pharmacie',array('ID_PHARMACIE'=>$ID_PHARMACIE),$datas);
   
     $message = "<div class='alert alert-success' id='message'>

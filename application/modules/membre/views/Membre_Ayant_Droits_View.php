@@ -272,7 +272,7 @@
       <a class="btn btn-primary btn-sm" href="'.base_url('membre/Membre/index_update_ayant/'.$keys['ID_MEMBRE']).'" role="button"><i class="far fa-edit"></i></a>
       <button type="button" class="btn '.$buttoncolor.' btn-sm" data-toggle="modal" data-target="#delete'.$keys['ID_MEMBRE'].'"><i class="fas fa-minus-circle"></i></button>
 
-      <button type="button" class="btn '.$buttoncolor.' btn-sm"   onclick="get_membre('.$keys['ID_MEMBRE'].')"><i class="fas fa-times-circle" title="Changer la date fin"></i></button>
+      <button type="button" class="btn '.$buttoncolor.' btn-sm"   onclick="get_membre('.$keys['ID_MEMBRE'].')"><i class="far fa-edit" title="Changer la date fin"></i></button>
       <div class="modal fade" id="delete'.$keys['ID_MEMBRE'].'">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">

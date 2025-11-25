@@ -87,7 +87,7 @@ if (empty($this->session->userdata('MIS_ID_USER'))) {
       }
       ?>
       <?php
-      if (in_array('4',$this->session->userdata('MIS_DROIT')) || in_array('5',$this->session->userdata('MIS_DROIT')) || in_array('6',$this->session->userdata('MIS_DROIT')) || in_array('7',$this->session->userdata('MIS_DROIT')) || in_array('8',$this->session->userdata('MIS_DROIT')) || in_array('9',$this->session->userdata('MIS_DROIT')) || in_array('10',$this->session->userdata('MIS_DROIT'))){
+      if (in_array('4',$this->session->userdata('MIS_DROIT')) || in_array('5',$this->session->userdata('MIS_DROIT')) || in_array('6',$this->session->userdata('MIS_DROIT')) || in_array('7',$this->session->userdata('MIS_DROIT')) || in_array('8',$this->session->userdata('MIS_DROIT')) || in_array('9',$this->session->userdata('MIS_DROIT')) || in_array('45',$this->session->userdata('MIS_DROIT')) || in_array('10',$this->session->userdata('MIS_DROIT'))){
         ?>
         <li class="nav-item has-treeview <?php if($this->router->class == 'Regime_Assurance' || $this->router->class == 'Categorie_Assurance' || $this->router->class == 'Couverture_Medicament' || $this->router->class == 'Couverture_Structure_Sanitaire' || $this->router->class == 'Groupe_Sanguin' || $this->router->class == 'Province' || $this->router->class == 'Commune'){ echo 'menu-open';} else{ echo '';}  ?>">
           <a href="#" class="nav-link">
@@ -107,6 +107,20 @@ if (empty($this->session->userdata('MIS_ID_USER'))) {
                 <p>Regime d'Assurance</p>
               </a>
             </li>
+            <?php
+          }
+          ?>
+
+           <?php
+          if (in_array('45',$this->session->userdata('MIS_DROIT'))){
+            ?>
+            <li class="nav-item">
+              <a href="<?=base_url()?>saisie/Pharmacie" class="nav-link <?php if($this->router->class == 'Pharmacie' ){ echo 'active';} else{ echo '';}  ?>">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Pharmacie</p>
+              </a>
+            </li>
+
             <?php
           }
           ?>

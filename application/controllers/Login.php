@@ -62,6 +62,9 @@ class Login extends CI_Controller {
               // print_r($user['PASSWORD']);die();
    
             $droits = $this->Model->getRequete("Select ID_DROIT FROM config_profil_droit WHERE PROFIL_ID = ".$user['PROFIL_ID']."");
+
+
+            // print_r($droits);die();
              $listdroi[] =NULL;
              foreach ($droits as $key) {
                  $listdroi[] .= $key['ID_DROIT'];

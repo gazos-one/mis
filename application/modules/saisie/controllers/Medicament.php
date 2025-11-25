@@ -100,7 +100,7 @@ class Medicament extends CI_Controller {
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="myModalLabel">'.$bigtitr.'</h4>
+        <h4 class="modal-title" id="myModalLabel">'.$key['ID_MEDICAMENT'].'</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -110,18 +110,39 @@ class Medicament extends CI_Controller {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
-        <a href="'.base_url('saisie/Medicament/'.$fx.'/'.$key['ID_MEDICAMENT']).'" class="btn '.$col.'">'.$titr.'</a>
+        <a href="'.base_url('saisie/Medicament/'.$fx.'/'.$key['ID_MEDICAMENT']).'" class="btn btn-successol">'.$bigtitr.'</a>
       </div>
     </div>
   </div>
 </div>
 
-          <div class="dropdown ">
+<div class="modal fade" id="delete'.$key['ID_MEDICAMENT'].'" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Suppression du medicament</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h6><b>Mr/Mme , </b> voulez-vous supprimer ce medicament ('.$key['NMEDICAMENT'].')?</h6>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+        <a href="'.base_url('saisie/Medicament/delete/'.$key['ID_MEDICAMENT']).'" class="btn btn-danger">Supprimer</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+          <div class="dropdown">
                     <a class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">Actions
                     <span class="caret"></span></a>
                     <ul class="dropdown-menu dropdown-menu-right">
                     <li><a class="dropdown-item" href="'.base_url('saisie/Medicament/index_update/'.$key['ID_MEDICAMENT']).'"> Modifier </a> </li>
                     <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#desactcat'.$key['ID_MEDICAMENT'].'"> '.$titr.' </a> </li>
+                    <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete'.$key['ID_MEDICAMENT'].'"> Supprimer </a> </li>
                     </ul>
                   </div>';
          
@@ -212,6 +233,17 @@ class Medicament extends CI_Controller {
       $this->Model->update('masque_medicament',array('ID_MEDICAMENT'=>$id),array('STATUS'=>1));
       $message = "<div class='alert alert-success' id='message'>
                             Medicament Réactivé avec succés
+                            <button type='button' class='close' data-dismiss='alert'>&times;</button>
+                      </div>";
+      $this->session->set_flashdata(array('message'=>$message));
+      redirect(base_url('saisie/Medicament/listing')); 
+    }
+
+   public function delete($id)
+    {
+      $this->Model->delete('masque_medicament',array('ID_MEDICAMENT'=>$id));
+      $message = "<div class='alert alert-danger' id='message'>
+                            Medicament supprimé avec succés
                             <button type='button' class='close' data-dismiss='alert'>&times;</button>
                       </div>";
       $this->session->set_flashdata(array('message'=>$message));

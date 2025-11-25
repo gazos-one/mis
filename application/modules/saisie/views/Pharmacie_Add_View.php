@@ -40,6 +40,47 @@
                           <?php echo form_error('DESCRIPTION', '<div class="text-danger">', '</div>'); ?>
                       </div>
 
+                       <div class="form-group col-md-6">
+                          <label for="SELECTED_VALUE">
+                             Pharmacie qui est 
+                             <i class="text-danger"> *</i>
+                          </label>
+                          <select class="form-control"  onchange="affiche_value()" name="SELECTED_VALUE" id="SELECTED_VALUE">
+                          <option value="" >-- Sélectionner --</option>
+                         
+                          <option value="1" <?php $retVal = (set_value('SELECTED_VALUE') == 1) ? "selected" : '' ; ?>>indépendant ?</option>
+                          <option value="2" <?php $retVal = (set_value('SELECTED_VALUE') == 2) ? "selected" : '' ; ?>>dépendant d'une structure ?</option>
+
+                          
+                          </select>
+                          <?php echo form_error('SELECTED_VALUE', '<div class="text-danger">', '</div>'); ?>
+                       </div>
+
+                        <div class="form-group col-md-6" id="DIV_ID_STRUCTURE" style="<?=$style?>;">
+                          <label for="ID_STRUCTURE">
+                             Structure
+                             <i class="text-danger"> *</i>
+                          </label>
+                          <select class="form-control"  onchange="province(this)" name="ID_STRUCTURE" id="ID_STRUCTURE">
+                          <option value="" >-- Sélectionner --</option>
+                          <?php
+                          foreach ($structure as $key => $value) { 
+                            if ($value['ID_STRUCTURE'] == set_value('ID_STRUCTURE')) {
+                              ?>
+                            <option value="<?=$value['ID_STRUCTURE']?>" selected="selected"><?=$value['DESCRIPTION']?></option>
+                              <?php
+                            }
+                            else{
+                              ?>
+                              <option value="<?=$value['ID_STRUCTURE']?>"><?=$value['DESCRIPTION']?></option>
+                              <?php
+                            }
+                           } 
+                           ?>
+                          </select>
+                          <?php echo form_error('ID_STRUCTURE', '<div class="text-danger">', '</div>'); ?>
+                       </div>
+
 
                        <div class="form-group col-md-6">
                           <label for="PROVINCE_ID">
@@ -48,11 +89,20 @@
                           </label>
                           <select class="form-control"  onchange="province(this)" name="PROVINCE_ID" id="PROVINCE_ID">
                           <option value="" >-- Sélectionner --</option>
-                          <?php
-                          foreach ($province as $key => $value) { ?>
-                          <option value="<?=$value['PROVINCE_ID']?>" ><?=$value['PROVINCE_NAME']?></option>
-                          <?php
-                           } ?>
+                         <?php
+                          foreach ($province as $key => $value) { 
+                            if ($value['PROVINCE_ID'] == set_value('PROVINCE_ID')) {
+                              ?>
+                            <option value="<?=$value['PROVINCE_ID']?>" selected="selected"><?=$value['PROVINCE_NAME']?></option>
+                              <?php
+                            }
+                            else{
+                              ?>
+                              <option value="<?=$value['PROVINCE_ID']?>"><?=$value['PROVINCE_NAME']?></option>
+                              <?php
+                            }
+                           } 
+                           ?>
                           </select>
                           <?php echo form_error('PROVINCE_ID', '<div class="text-danger">', '</div>'); ?>
                        </div>
@@ -118,4 +168,17 @@
             $('#COMMUNE_ID').html(data);
           });
      }
+     </script>
+
+     <script>
+       function affiche_value(){
+
+       var SELECTED_VALUE= $("#SELECTED_VALUE").val(); 
+
+       if (SELECTED_VALUE  === '2') {
+       document.getElementById('DIV_ID_STRUCTURE').style.display="block";
+       }else{
+       document.getElementById('DIV_ID_STRUCTURE').style.display="none";
+       }
+       }
      </script>
