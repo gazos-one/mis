@@ -33,7 +33,7 @@ class Pdf_prise_en_charge extends CI_Controller {
   $data['groupe']= $this->Model->getList("membre_groupe");
 
   $data['tconsultation'] = $this->Model->getRequete('SELECT * FROM consultation_type WHERE ID_CONSULTATION_TYPE IN (1,2,5,6,8)'); 
-  $data['CategorieAssurance'] = $this->Model->getListOrdertwo('syst_categorie_assurance',array('ID_REGIME_ASSURANCE'=>1,'STATUS'=>1),'DESCRIPTION');
+  $data['CategorieAssurance'] = $this->Model->getListOrdertwo('syst_categorie_assurance',array('ID_REGIME_ASSURANCE'=>1,'STATUS'=>1),'DESCRIPTION');     
 
   $this->load->view('Prise_en_charge_Add_View',$data);
 }
@@ -163,6 +163,82 @@ public function add()
 }
 
 
+public function getOne($id)
+ {
+  $data['title']='Enregistrement de prise en charge';
+  $data['stitle']='Enregistrement de Prise en Charge';
+  $data['periode'] = $this->Model->getListOrdertwo('syst_couverture_structure',array(),'DESCRIPTION'); 
+  $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
+  $data['affilie']= $this->Model->getList("membre_membre",array('IS_AFFILIE'=>0));
+  $data['groupe']= $this->Model->getList("membre_groupe");
+  $data['selected']= $this->Model->getOne("prise_en_charge_hospitalisation",array('ID_PRISE_CHARGE'=>$id));
+
+
+  $data['tconsultation'] = $this->Model->getRequete('SELECT * FROM consultation_type WHERE ID_CONSULTATION_TYPE IN (1,2,5,6,8)'); 
+  $data['CategorieAssurance'] = $this->Model->getListOrdertwo('syst_categorie_assurance',array('ID_REGIME_ASSURANCE'=>1,'STATUS'=>1),'DESCRIPTION');     
+
+  $this->load->view('Prise_en_charge_Update_View',$data);
+}
+
+
+public function update()
+{
+
+  $this->form_validation->set_rules('ID_GROUPE', 'Groupe', 'required');
+  $this->form_validation->set_rules('TYPE_AFFILIE', 'Type Affilie', 'required');
+  $this->form_validation->set_rules('ID_MEMBRE', 'Membre', 'required');
+  $this->form_validation->set_rules('DATE_CONSULTATION', 'Date', 'required');
+  $this->form_validation->set_rules('ID_CONSULTATION_TYPE', 'Type de consultation', 'required');
+
+
+
+  if ($this->form_validation->run() == FALSE){
+    $message = "<div class='alert alert-danger'>
+    Consultation non enregistr&eacute;e
+    <button type='button' class='close' data-dismiss='alert'>&times;</button>
+    </div>";
+    $this->session->set_flashdata(array('message'=>$message));
+    $data['title']='Enregistrement Consultation';
+    $data['stitle']='Enregistrement Consultation';
+    $data['periode'] = $this->Model->getListOrdertwo('syst_couverture_structure',array(),'DESCRIPTION'); 
+    $data['affilie']= $this->Model->getList("membre_membre",array('IS_AFFILIE'=>0));
+    $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
+    $data['tconsultation'] = $this->Model->getListOrdertwo('consultation_type',array(),'DESCRIPTION'); 
+    $data['coptique'] = $this->Model->getListOrdertwo('consultation_centre_optique',array(),'DESCRIPTION'); 
+    $data['groupe']= $this->Model->getList("membre_groupe");
+    $data['selected']= $this->Model->getOne("prise_en_charge_hospitalisation",array('ID_PRISE_CHARGE'=>$this->input->post('ID_PRISE_CHARGE')));
+
+
+    $this->load->view('Enregistrer_Consultation_Add_View',$data);
+  }
+  else{
+
+    $data= array(
+      'ID_GROUPE'=>$this->input->post('ID_GROUPE'),
+      'ID_TYPE_STRUCTURE'=>$this->input->post('ID_TYPE_STRUCTURE'),
+      'ID_STRUCTURE'=>$this->input->post('ID_STRUCTURE'),
+      'TYPE_AFFILIE'=>$this->input->post('TYPE_AFFILIE'),
+      'ID_MEMBRE'=>$this->input->post('ID_MEMBRE'),
+      'DATE_CONSULTATION'=>$this->input->post('DATE_CONSULTATION'),       
+      'ID_CONSULTATION_TYPE'=>$this->input->post('ID_CONSULTATION_TYPE'),       
+    );
+
+    
+    $this->Model->update('prise_en_charge_hospitalisation',array('ID_PRISE_CHARGE'=>$this->input->post('ID_STRUCTURE')),$data);
+
+    $message = "<div class='alert alert-success' id='message'>
+    Consultation modifi&eacute; avec succés
+    <button type='button' class='close' data-dismiss='alert'>&times;</button>
+    </div>";
+    $this->session->set_flashdata(array('message'=>$message));
+    redirect(base_url('consultation/Pdf_prise_en_charge/liste'));  
+
+  }
+  
+
+}
+
+
 public function liste()
 {
   $data['title']=' Liste';
@@ -235,12 +311,33 @@ public function listing()
     $row[] = $key->beneficiare;
     
 
-    $row[]='
+    $row[]='<div class="modal fade" id="delete'.$key->ID_PRISE_CHARGE.'" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Liste des Medicaments pris</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+             <h3> Voulez-vous vraiment effectuer la suppression ?</h3>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+                '.base_url('consultation/Pdf_prise_en_charge/delete/'.$key->ID_PRISE_CHARGE).'
+              </div>
+            </div>
+          </div>
+        </div>
 
     <div class="dropdown ">
     <a class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">Actions
     <span class="caret"></span></a>
     <ul class="dropdown-menu dropdown-menu-right">
+    <li><a class="dropdown-item" target="_blank" href="'.base_url('consultation/Pdf_prise_en_charge/getOne/'.$key->ID_PRISE_CHARGE).'"> Modifier</a> </li>
+    <li><a class="dropdown-item" data-toggle="modal" data-target="#delete'.$key->ID_PRISE_CHARGE.'" href="#"> Supprimer</a> </li>
+
     <li><a class="dropdown-item" target="_blank" href="'.base_url('consultation/Pdf_prise_en_charge/prise_en_charge_pdf/'.$key->ID_PRISE_CHARGE).'"> Pdf</a> </li>
     </ul>
     </div>';

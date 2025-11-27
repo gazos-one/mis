@@ -27,7 +27,7 @@ public function index()
 
 }
 
-public function liste()
+public function liste() 
 {
 
 
@@ -76,7 +76,10 @@ public function liste()
   $C_TOTAL = $M_CONSULTATION + $M_MEDICAMENT;
   
 
-  $plafond=intval($key->PLAFOND_ANNUEL)*0.65;
+  // $plafond=intval($key->PLAFOND_ANNUEL)*0.65;
+
+  $plafond=$key->PLAFOND_ANNUEL;
+
 
   $plafonner='';
   if ($C_TOTAL > $plafond) {

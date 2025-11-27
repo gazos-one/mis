@@ -6,6 +6,9 @@ class Login extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
+       
+       $this->output->enable_profiler(TRUE);
+
 
     }
 
@@ -20,6 +23,11 @@ class Login extends CI_Controller {
 
             $datas['message'] = $params;
             $datas['title'] = 'Login';
+
+            // print_r($datas['title']);die();
+
+
+
             $this->load->view('Login_View', $datas);
 
          }
