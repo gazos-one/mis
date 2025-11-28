@@ -48,10 +48,48 @@
               </div>
 
               <div class="card-body">
-               <!-- <form id="FormData" action="#" method="POST"> -->
+              
+
+                <div class="row">
+            <div class="form-group col-sm-4">
+                          <label for="MOIS">
+                        ANNEE - MOIS
+                             <i class="text-danger"> *</i>
+                          </label>
+                          <input type="month" id="MOIS" name="MOIS" class="form-control"  value="<?=set_value('MOIS');?>" id="MOIS"  onchange="relais()">
+            </div>
+
+
+              <div class="col-md-4">
+                <label for="ID_GROUPE">Croupe </label>
+                  <select class="form-control"  onchange="relais()" name="ID_GROUPE" id="ID_GROUPE"  onchange="subb()">
+                  <option value="">-- Sélectionner --</option>
+                          <?php
+                          foreach ($groupe as $value) { 
+                            if (set_value('ID_GROUPE') == $value['ID_GROUPE']) {
+                            ?>
+                            <option value="<?=$value['ID_GROUPE']?>" selected><?=$value['NOM_GROUPE']?></option>
+                            <?php
+                            }
+                            else{
+                              ?>
+                              <option value="<?=$value['ID_GROUPE']?>"><?=$value['NOM_GROUPE']?></option>
+                              <?php
+                              }
+                           } 
+                           ?>
+                </select><br>
+              </div>
+           
+            </div>
+
+
+            
+          </div>
                  <div class="tab-content" id="custom-tabs-one-tabContent">
                   <div class="tab-pane fade show active" id="cotisation-content" role="tabpanel" aria-labelledby="custom-tabs-one-home-tab">
                     <div class="card-body table-responsive">
+                     
                       <table id="mytable" class="table table-bordered table-striped  table-hover">
                         <thead>
                           <tr>
@@ -169,6 +207,19 @@ include VIEWPATH.'includes/new_script.php';
 </script>
 
 <script>
+  
+function relais(argument) {
+
+   liste();
+   liste_adhesion();
+   liste_carte();
+
+
+}
+
+</script>
+
+<script>
   $(document).ready(function()
   {
     liste();
@@ -187,7 +238,11 @@ include VIEWPATH.'includes/new_script.php';
 
   function liste(argument) {
 
+    var MOIS=$('#MOIS').val();
+    var ID_GROUPE=$('#ID_GROUPE').val();
 
+
+  
     var row_count ="1000000";
 
     $("#mytable").DataTable({
@@ -198,7 +253,7 @@ include VIEWPATH.'includes/new_script.php';
       "ajax":{
         url:"<?php echo base_url('cotisation/Configuration_Cotisation/liste');?>",
         type:"POST",
-        data:{},
+        data:{MOIS:MOIS,ID_GROUPE:ID_GROUPE},
       },
       lengthMenu: [[10,50, 100, row_count], [10,50, 100, "All"]],
       pageLength: 10,
@@ -240,6 +295,8 @@ include VIEWPATH.'includes/new_script.php';
 
   function liste_adhesion(argument) {
 
+    var MOIS=$('#MOIS').val();
+    var ID_GROUPE=$('#ID_GROUPE').val();
 
     var row_count ="1000000";
 
@@ -251,7 +308,7 @@ include VIEWPATH.'includes/new_script.php';
       "ajax":{
         url:"<?php echo base_url('cotisation/Configuration_Cotisation/liste_adhesion');?>",
         type:"POST",
-        data:{},
+        data:{MOIS:MOIS,ID_GROUPE:ID_GROUPE},
       },
       lengthMenu: [[10,50, 100, row_count], [10,50, 100, "All"]],
       pageLength: 10,
@@ -291,6 +348,9 @@ include VIEWPATH.'includes/new_script.php';
   }
 
   function liste_carte(argument) {
+  
+    var MOIS=$('#MOIS').val();
+    var ID_GROUPE=$('#ID_GROUPE').val();
 
 
     var row_count ="1000000";
@@ -303,7 +363,7 @@ include VIEWPATH.'includes/new_script.php';
       "ajax":{
         url:"<?php echo base_url('cotisation/Configuration_Cotisation/liste_carte');?>",
         type:"POST",
-        data:{},
+        data:{MOIS:MOIS,ID_GROUPE:ID_GROUPE},
       },
       lengthMenu: [[10,50, 100, row_count], [10,50, 100, "All"]],
       pageLength: 10,

@@ -91,7 +91,7 @@ class Liste_Consultation_Hopital extends CI_Controller
        $order_by .= isset($_POST['order']) ? ' ORDER BY ' . $_POST['order']['0']['column'] . '  ' . $_POST['order']['0']['dir'] : ' ORDER BY ID_STRUCTURE ASC';
      }
  
-     $search = !empty($_POST['search']['value']) ? (' AND HOPITAL LIKE "%' . $var_search . '%" ') :'';
+     $search = !empty($_POST['search']['value']) ? (' AND masque_stucture_sanitaire.DESCRIPTION LIKE "%' . $var_search . '%" ') :'';
  
      $critaire = '';
      $order_by="  ORDER BY HOPITAL";
@@ -114,7 +114,7 @@ class Liste_Consultation_Hopital extends CI_Controller
      //   $order_bys .= isset($_POST['order']) ? ' ORDER BY ' . $_POST['order']['0']['column'] . '  ' . $_POST['order']['0']['dir'] : ' ORDER BY ID_CLIENT ASC';
      // }
  
-     // $searchs = !empty($_POST['search']['value']) ? (' AND (consultation_centre_optique.DESCRIPTION LIKE "%' . $var_searchs . '%" )') :'';
+     $search = !empty($_POST['search']['value']) ? (' AND (consultation_centre_optique.DESCRIPTION LIKE "%' . $var_search . '%" )') :'';
  
       $critaires = '';
      // $order_bys="ORDER BY consultation_centre_optique.DESCRIPTION";
@@ -139,12 +139,26 @@ class Liste_Consultation_Hopital extends CI_Controller
       // }else{
       //  $user='activer';
       // }
+
+
+       $verify=$this->Model->getOne('consultation_pharmacie',array("ID_STRUCTURE"=>$val->ID_STRUCTURE));
+
+       if (!empty($verify)) {
+        
+       }
+
+       $MONTANT_MIS="-";
+       if (($val->MONTANT_CONSULTATION != null ) && ($val->MONTANT_A_PAYER != null )) {
+       $MONTANT_MIS=$val->MONTANT_CONSULTATION-$val->MONTANT_A_PAYER;
+       }
        $post = array();
-      //  $post[] = $u++;
+      //  $post[] = $u++; 
        $post[] = $val->HOPITAL;
        $post[] = $val->NOMBRE;
        $post[]='<div class="text-right">'.number_format($val->MONTANT_CONSULTATION,0,',',' ').'</div>';
        $post[]='<div class="text-right">'.number_format($val->MONTANT_A_PAYER,0,',',' ').'</div>';
+       $post[]='<div class="text-right">'.number_format($MONTANT_MIS,0,',',' ').'</div>';
+
        $post[] = $ANNEE;
        $post[] = $MOIS;
       // '.$critaireanne .'
@@ -177,7 +191,7 @@ class Liste_Consultation_Hopital extends CI_Controller
                              <a class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">Actions
                             <span class="caret"></span></a>
                            <ul class="dropdown-menu dropdown-menu-right">
-                            <li><a class="dropdown-item btn-danger" href="'.base_url('consultation/Liste_Consultation_Hopital/apercu/'.$val->ID_STRUCTURE).'"> Apercu </a> </li> 
+                            <li><a class="dropdown-item btn-danger" href="'.base_url('consultation/Liste_Consultation_Hopital/apercu/'.$val->ID_STRUCTURE.'/'.$ANNEE.'/'.$MOIS.'/'.$ID_CONSULTATION_TYPE).'"> Apercu </a> </li> 
                             <li><a class="dropdown-item btn-danger" href="'.base_url('consultation/Liste_Consultation/index_update/'.$val->ID_CONSULTATION.'').'"> Modifier </a> </li> 
                           
                             <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#desactcat'.$val->ID_CONSULTATION.'"> Effacer </a> </li>  
@@ -307,12 +321,49 @@ class Liste_Consultation_Hopital extends CI_Controller
 
      $crit_pyment=1;
 
-     // $listes=$this->Model->getRequete('');
+      $ANNEE=$this->input->post('annee');
+      $ID_CONSULTATION_TYPE=$this->input->post('ID_CONSULTATION_TYPE');
+      
+      $MOIS=$this->input->post('mois');
+
+
+      
+          
+      if (!empty($ANNEE)) {
+        $data['ANNEE']=$ANNEE;
+        $critaireanne= ' AND DATE_FORMAT(DATE_CONSULTATION,"%Y") Like "%'.$ANNEE.'%"';
+      }   
+      else{
+        $ANNEE = date('Y');
+        $data['ANNEE']=date('Y');
+        $critaireanne = ' AND DATE_FORMAT(DATE_CONSULTATION,"%Y") Like "%'.$ANNEE.'%"';
+      }
+
+      if (!empty($MOIS)) {
+        
+        $critairemois= ' AND DATE_FORMAT(DATE_CONSULTATION,"%m") Like "%'.$MOIS.'%"';
+      }   
+      else{
+        $MOIS = date('m');
+        
+        $critairemois = ' AND DATE_FORMAT(DATE_CONSULTATION,"%m") Like "%'.$MOIS.'%"';
+      }
+
+
+      if (!empty($ID_CONSULTATION_TYPE)) {
+        $data['ID_CONSULTATION_TYPE']=$ID_CONSULTATION_TYPE;
+        $critaire2= ' AND consultation_consultation.ID_CONSULTATION_TYPE  = '.$ID_CONSULTATION_TYPE.' ';
+      }   
+      else{
+        $ID_CONSULTATION_TYPE = 1;
+        $data['ID_CONSULTATION_TYPE']= 1;
+        $critaire2 = ' ';
+      }
 
 
 
 
-      $query_principal='SELECT membre_membre.NOM, membre_membre.PRENOM,COALESCE(aff.NOM, membre_membre.NOM) AS ANOM, COALESCE(aff.PRENOM, membre_membre.PRENOM) AS APRENOM,COALESCE(aff.ID_MEMBRE, membre_membre.ID_MEMBRE) AS ID_MEMBRE, consultation_consultation.DATE_CONSULTATION, consultation_consultation.NUM_BORDERAUX, consultation_consultation.MONTANT_CONSULTATION, consultation_consultation.POURCENTAGE_C, consultation_consultation.POURCENTAGE_A, consultation_consultation.MONTANT_A_PAYER, membre_groupe.NOM_GROUPE FROM `consultation_consultation` JOIN membre_membre ON membre_membre.ID_MEMBRE = consultation_consultation.ID_MEMBRE LEFT JOIN membre_membre aff ON aff.ID_MEMBRE = membre_membre.CODE_PARENT LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE WHERE 1 and '.$crit_pyment.' AND ID_STRUCTURE = '.$id.'';
+      $query_principal='SELECT membre_membre.NOM, membre_membre.PRENOM,COALESCE(aff.NOM, membre_membre.NOM) AS ANOM, COALESCE(aff.PRENOM, membre_membre.PRENOM) AS APRENOM,COALESCE(aff.ID_MEMBRE, membre_membre.ID_MEMBRE) AS ID_MEMBRE, consultation_consultation.DATE_CONSULTATION, consultation_consultation.NUM_BORDERAUX, consultation_consultation.MONTANT_CONSULTATION, consultation_consultation.POURCENTAGE_C, consultation_consultation.POURCENTAGE_A, consultation_consultation.MONTANT_A_PAYER, membre_groupe.NOM_GROUPE FROM `consultation_consultation` JOIN membre_membre ON membre_membre.ID_MEMBRE = consultation_consultation.ID_MEMBRE LEFT JOIN membre_membre aff ON aff.ID_MEMBRE = membre_membre.CODE_PARENT LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE WHERE 1 and '.$crit_pyment.' AND ID_STRUCTURE = '.$id.' '.$critaireanne.' '.$critairemois.' '.$critaire2.'';
 
 
        $var_search = !empty($_POST['search']['value']) ? $_POST['search']['value'] : null;
@@ -351,15 +402,15 @@ class Liste_Consultation_Hopital extends CI_Controller
 
 
 
-        $cconsultationa=$this->Model->getRequete('SELECT consultation_consultation.ID_CONSULTATION, consultation_consultation.ID_CONSULTATION_TYPE,  CASE WHEN consultation_consultation.ID_CONSULTATION_TYPE IN (3, 7) THEN consultation_centre_optique.DESCRIPTION ELSE masque_stucture_sanitaire.DESCRIPTION END AS STRUCTURE, consultation_consultation.DATE_CONSULTATION, consultation_consultation.POURCENTAGE_A, consultation_consultation.MONTANT_A_PAYER AS MONTANT_A_PAYER, IF(consultation_consultation.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT, membre_groupe.NOM_GROUPE, syst_couverture_structure.DESCRIPTION AS ID_TYPE_STRUCTURE, IF(aff.CODE_PARENT IS NULL, "A", "AD") AFFIL, consultation_type.DESCRIPTION, consultation_consultation.STATUS_PAIEMENT AS STATUS_P FROM    consultation_consultation  LEFT JOIN  masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE LEFT JOIN  consultation_centre_optique ON consultation_centre_optique.ID_CENTRE_OPTIQUE = consultation_consultation.ID_STRUCTURE JOIN  membre_membre aff ON aff.ID_MEMBRE = consultation_consultation.ID_MEMBRE  LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE JOIN syst_couverture_structure ON syst_couverture_structure.ID_TYPE_STRUCTURE = consultation_consultation.ID_TYPE_STRUCTURE JOIN consultation_type ON consultation_type.ID_CONSULTATION_TYPE = consultation_consultation.ID_CONSULTATION_TYPE WHERE consultation_consultation.ID_MEMBRE = '.$key->ID_MEMBRE.'');
+        $cconsultationa=$this->Model->getRequete('SELECT consultation_consultation.ID_CONSULTATION, consultation_consultation.ID_CONSULTATION_TYPE,  CASE WHEN consultation_consultation.ID_CONSULTATION_TYPE IN (3, 7) THEN consultation_centre_optique.DESCRIPTION ELSE masque_stucture_sanitaire.DESCRIPTION END AS STRUCTURE, consultation_consultation.DATE_CONSULTATION, consultation_consultation.POURCENTAGE_A, consultation_consultation.MONTANT_A_PAYER AS MONTANT_A_PAYER, IF(consultation_consultation.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT, membre_groupe.NOM_GROUPE, syst_couverture_structure.DESCRIPTION AS ID_TYPE_STRUCTURE, IF(aff.CODE_PARENT IS NULL, "A", "AD") AFFIL, consultation_type.DESCRIPTION, consultation_consultation.STATUS_PAIEMENT AS STATUS_P FROM    consultation_consultation  LEFT JOIN  masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE LEFT JOIN  consultation_centre_optique ON consultation_centre_optique.ID_CENTRE_OPTIQUE = consultation_consultation.ID_STRUCTURE JOIN  membre_membre aff ON aff.ID_MEMBRE = consultation_consultation.ID_MEMBRE  LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE JOIN syst_couverture_structure ON syst_couverture_structure.ID_TYPE_STRUCTURE = consultation_consultation.ID_TYPE_STRUCTURE JOIN consultation_type ON consultation_type.ID_CONSULTATION_TYPE = consultation_consultation.ID_CONSULTATION_TYPE WHERE consultation_consultation.ID_MEMBRE = '.$key->ID_MEMBRE.' '.$critaireanne.' '.$critairemois.' '.$critaire2.'');
 
         // print_r($key->ID_MEMBRE);die();
 
-        $cconsultationb=$this->Model->getRequete('SELECT consultation_consultation.ID_CONSULTATION, consultation_consultation.ID_CONSULTATION_TYPE,  CASE WHEN consultation_consultation.ID_CONSULTATION_TYPE IN (3, 7) THEN consultation_centre_optique.DESCRIPTION ELSE masque_stucture_sanitaire.DESCRIPTION END AS STRUCTURE, consultation_consultation.DATE_CONSULTATION, consultation_consultation.POURCENTAGE_A, consultation_consultation.MONTANT_A_PAYER AS MONTANT_A_PAYER, IF(consultation_consultation.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT, membre_groupe.NOM_GROUPE, syst_couverture_structure.DESCRIPTION AS ID_TYPE_STRUCTURE,IF(aff.CODE_PARENT IS NULL, "A", "AD") AFFIL, consultation_type.DESCRIPTION, consultation_consultation.STATUS_PAIEMENT AS STATUS_P FROM    consultation_consultation  LEFT JOIN  masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE LEFT JOIN  consultation_centre_optique ON consultation_centre_optique.ID_CENTRE_OPTIQUE = consultation_consultation.ID_STRUCTURE JOIN  membre_membre aff ON aff.ID_MEMBRE = consultation_consultation.ID_MEMBRE  LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE JOIN syst_couverture_structure ON syst_couverture_structure.ID_TYPE_STRUCTURE = consultation_consultation.ID_TYPE_STRUCTURE JOIN consultation_type ON consultation_type.ID_CONSULTATION_TYPE = consultation_consultation.ID_CONSULTATION_TYPE WHERE consultation_consultation.TYPE_AFFILIE = '.$key->ID_MEMBRE.' AND consultation_consultation.ID_MEMBRE != '.$key->ID_MEMBRE.'');
+        $cconsultationb=$this->Model->getRequete('SELECT consultation_consultation.ID_CONSULTATION, consultation_consultation.ID_CONSULTATION_TYPE,  CASE WHEN consultation_consultation.ID_CONSULTATION_TYPE IN (3, 7) THEN consultation_centre_optique.DESCRIPTION ELSE masque_stucture_sanitaire.DESCRIPTION END AS STRUCTURE, consultation_consultation.DATE_CONSULTATION, consultation_consultation.POURCENTAGE_A, consultation_consultation.MONTANT_A_PAYER AS MONTANT_A_PAYER, IF(consultation_consultation.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT, membre_groupe.NOM_GROUPE, syst_couverture_structure.DESCRIPTION AS ID_TYPE_STRUCTURE,IF(aff.CODE_PARENT IS NULL, "A", "AD") AFFIL, consultation_type.DESCRIPTION, consultation_consultation.STATUS_PAIEMENT AS STATUS_P FROM    consultation_consultation  LEFT JOIN  masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE LEFT JOIN  consultation_centre_optique ON consultation_centre_optique.ID_CENTRE_OPTIQUE = consultation_consultation.ID_STRUCTURE JOIN  membre_membre aff ON aff.ID_MEMBRE = consultation_consultation.ID_MEMBRE  LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE JOIN syst_couverture_structure ON syst_couverture_structure.ID_TYPE_STRUCTURE = consultation_consultation.ID_TYPE_STRUCTURE JOIN consultation_type ON consultation_type.ID_CONSULTATION_TYPE = consultation_consultation.ID_CONSULTATION_TYPE WHERE consultation_consultation.TYPE_AFFILIE = '.$key->ID_MEMBRE.' AND consultation_consultation.ID_MEMBRE != '.$key->ID_MEMBRE.' '.$critaireanne.' '.$critairemois.' '.$critaire2.'');
 
-        $cmedicamenta=$this->Model->getRequete('SELECT consultation_medicament.ID_CONSULTATION_MEDICAMENT AS ID_CONSULTATION, "Pharmacie" AS ID_CONSULTATION_TYPE, consultation_pharmacie.DESCRIPTION AS STRUCTURE, consultation_medicament.DATE_CONSULTATION, "-" AS POURCENTAGE_A, consultation_medicament.MONTANT_A_PAYE_MIS AS MONTANT_A_PAYER, IF(consultation_medicament.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT, membre_groupe.NOM_GROUPE, "-" AS ID_TYPE_STRUCTURE, IF(aff.CODE_PARENT IS NULL, "A", "AD") AFFIL, "Pharmacie" AS DESCRIPTION, consultation_medicament.STATUS_PAIEMENT AS STATUS_P FROM consultation_medicament JOIN consultation_pharmacie ON consultation_pharmacie.ID_PHARMACIE = consultation_medicament.ID_PHARMACIE JOIN membre_membre aff ON aff.ID_MEMBRE = consultation_medicament.ID_MEMBRE LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE WHERE consultation_medicament.ID_MEMBRE = '.$key->ID_MEMBRE.'');
+        $cmedicamenta=$this->Model->getRequete('SELECT consultation_medicament.ID_CONSULTATION_MEDICAMENT AS ID_CONSULTATION, "Pharmacie" AS ID_CONSULTATION_TYPE, consultation_pharmacie.DESCRIPTION AS STRUCTURE, consultation_medicament.DATE_CONSULTATION, "-" AS POURCENTAGE_A, consultation_medicament.MONTANT_A_PAYE_MIS AS MONTANT_A_PAYER, IF(consultation_medicament.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT, membre_groupe.NOM_GROUPE, "-" AS ID_TYPE_STRUCTURE, IF(aff.CODE_PARENT IS NULL, "A", "AD") AFFIL, "Pharmacie" AS DESCRIPTION, consultation_medicament.STATUS_PAIEMENT AS STATUS_P FROM consultation_medicament JOIN consultation_pharmacie ON consultation_pharmacie.ID_PHARMACIE = consultation_medicament.ID_PHARMACIE JOIN membre_membre aff ON aff.ID_MEMBRE = consultation_medicament.ID_MEMBRE LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE WHERE consultation_medicament.ID_MEMBRE = '.$key->ID_MEMBRE.' '.$critaireanne.' '.$critairemois.' ');
 
-        $cmedicamentb=$this->Model->getRequete('SELECT consultation_medicament.ID_CONSULTATION_MEDICAMENT AS ID_CONSULTATION, "Pharmacie" AS ID_CONSULTATION_TYPE, consultation_pharmacie.DESCRIPTION AS STRUCTURE, consultation_medicament.DATE_CONSULTATION, "-" AS POURCENTAGE_A, consultation_medicament.MONTANT_A_PAYE_MIS AS MONTANT_A_PAYER, IF(consultation_medicament.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT, membre_groupe.NOM_GROUPE, "-" AS ID_TYPE_STRUCTURE, IF(aff.CODE_PARENT IS NULL, "A", "AD") AFFIL, "Pharmacie" AS DESCRIPTION, consultation_medicament.STATUS_PAIEMENT AS STATUS_P FROM consultation_medicament JOIN consultation_pharmacie ON consultation_pharmacie.ID_PHARMACIE = consultation_medicament.ID_PHARMACIE JOIN membre_membre aff ON aff.ID_MEMBRE = consultation_medicament.ID_MEMBRE LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE WHERE consultation_medicament.TYPE_AFFILIE = '.$key->ID_MEMBRE.' AND consultation_medicament.ID_MEMBRE != '.$key->ID_MEMBRE.'');
+        $cmedicamentb=$this->Model->getRequete('SELECT consultation_medicament.ID_CONSULTATION_MEDICAMENT AS ID_CONSULTATION, "Pharmacie" AS ID_CONSULTATION_TYPE, consultation_pharmacie.DESCRIPTION AS STRUCTURE, consultation_medicament.DATE_CONSULTATION, "-" AS POURCENTAGE_A, consultation_medicament.MONTANT_A_PAYE_MIS AS MONTANT_A_PAYER, IF(consultation_medicament.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT, membre_groupe.NOM_GROUPE, "-" AS ID_TYPE_STRUCTURE, IF(aff.CODE_PARENT IS NULL, "A", "AD") AFFIL, "Pharmacie" AS DESCRIPTION, consultation_medicament.STATUS_PAIEMENT AS STATUS_P FROM consultation_medicament JOIN consultation_pharmacie ON consultation_pharmacie.ID_PHARMACIE = consultation_medicament.ID_PHARMACIE JOIN membre_membre aff ON aff.ID_MEMBRE = consultation_medicament.ID_MEMBRE LEFT JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = aff.ID_MEMBRE LEFT JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE WHERE consultation_medicament.TYPE_AFFILIE = '.$key->ID_MEMBRE.' AND consultation_medicament.ID_MEMBRE != '.$key->ID_MEMBRE.' '.$critaireanne.' '.$critairemois.' ');
 
 
         
@@ -534,7 +585,7 @@ $(document).ready(function() {
       $this->load->view('Liste_Consultation_Hopital_Details_View',$data);
     }
 
-    public function apercu($id)
+    public function apercu($id,$annee=null,$mois=null,$ID_CONSULTATION_TYPE=null)
     {
 
    
@@ -542,6 +593,10 @@ $(document).ready(function() {
       $data['title']='';
 
       $data['is_archive']=0;
+      $data['annee']=$annee;
+      $data['mois']=$mois;
+      $data['ID_CONSULTATION_TYPE']=$ID_CONSULTATION_TYPE;
+
 
       $this->load->view('Liste_Apercu_View',$data);
     }

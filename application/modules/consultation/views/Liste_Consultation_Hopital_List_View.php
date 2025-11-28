@@ -25,6 +25,16 @@
               <!-- form start -->
 
  <div class="card-body table-responsive">
+   <ul class="nav nav-tabs" id="configuration-tabs" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="custom-tabs-one-home-tab" data-toggle="pill" href="#cotisation-content" role="tab" aria-controls="custom-tabs-one-home" aria-selected="true">Structure sans Pharmacie</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-one-profile-tab" data-toggle="pill" href="#adhesion-content" role="tab" aria-controls="custom-tabs-one-profile" aria-selected="false">Structure avec Pharmacie </a>
+                  </li>
+                 
+
+                </ul>
   
 <input type="hidden" name="STATUS_PAYEMENT" id="STATUS_PAIEMENT" value="<?=$STATUS_PAIEMENT;?>">
 
@@ -35,6 +45,7 @@
                     <th>Nombre</th>
                     <th>Consultation</th>
                     <th>A paye</th>
+                    <th>A paye par MIS</th>
                     <th>Ann&eacute;e</th>
                     <th>MOIS</th>
                     <th>Apercu</th>

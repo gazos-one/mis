@@ -121,7 +121,15 @@
                               <td><b>Agence</b></td>
                               <td><?php 
                               $AGEN = $this->Model->getOne('masque_agence_msi',array('ID_AGENCE'=>$selected['ID_AGENCE']));
-                              echo $AGEN['DESCRIPTION']?></td>
+                              if (!empty($AGEN)) {
+                               echo $AGEN['DESCRIPTION'];
+                              }
+                              else{ 
+                              echo "N/A";
+                              }
+                               ?>
+                                
+                              </td>
                               <td><b>T&eacute;l&eacute;phone</b></td>
                               <td><?php echo $selected['TELEPHONE']?></td>
                             </tr>
@@ -407,7 +415,7 @@ $qrcodes_aff = $this->Model->getRequeteOne("SELECT membre_membre_qr.PATH_QR_CODE
                   $verifaffi = $this->Model->getRequeteOne('SELECT CODE_PARENT FROM membre_membre WHERE ID_MEMBRE = '.$selected['ID_MEMBRE'].''); 
                   if ($verifaffi['CODE_PARENT'] == NULL) {
                     $cconsultationa=$this->Model->getRequete('SELECT syst_couverture_structure.DESCRIPTION AS ID_TYPE_STRUCTURE, masque_stucture_sanitaire.DESCRIPTION AS STRUCTURE, consultation_consultation.DATE_CONSULTATION, consultation_consultation.POURCENTAGE_A, (consultation_consultation.MONTANT_CONSULTATION - consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER, IF(consultation_consultation.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT FROM consultation_consultation  JOIN membre_membre aff ON aff.ID_MEMBRE = consultation_consultation.ID_MEMBRE JOIN syst_couverture_structure ON syst_couverture_structure.ID_TYPE_STRUCTURE = consultation_consultation.ID_TYPE_STRUCTURE JOIN masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE WHERE consultation_consultation.ID_MEMBRE = '.$selected['ID_MEMBRE'].' ');
-                    $cconsultationb=$this->Model->getRequete('SELECT syst_couverture_structure.DESCRIPTION AS ID_TYPE_STRUCTURE, masque_stucture_sanitaire.DESCRIPTION AS STRUCTURE, consultation_consultation.DATE_CONSULTATION, consultation_consultation.POURCENTAGE_A, (consultation_consultation.MONTANT_CONSULTATION - consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER, IF(consultation_consultation.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT FROM consultation_consultation  JOIN membre_membre aff ON aff.ID_MEMBRE = consultation_consultation.ID_MEMBRE JOIN syst_couverture_structure ON syst_couverture_structure.ID_TYPE_STRUCTURE = consultation_consultation.ID_TYPE_STRUCTURE JOIN masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE WHERE consultation_consultation.TYPE_AFFILIE = '.$selected['ID_MEMBRE'].' AND consultation_consultation.ID_MEMBRE != '.$selected['ID_MEMBRE'].'');
+                    $cconsultationb=$this->Model->getRequete('SELECT syst_couverture_structure.DESCRIPTION AS ID_TYPE_STRUCTURE, masque_stucture_sanitaire.DESCRIPTION AS STRUCTURE, consultation_consultation.DATE_CONSULTATION, consultation_consultation.POURCENTAGE_A, (consultation_consultation.MONTANT_CONSULTATION - consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER, IF(consultation_consultation.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT, aff.NOM, aff.PRENOM, aff.IS_CONJOINT, aff.CODE_PARENT FROM consultation_consultation  JOIN membre_membre aff ON aff.ID_MEMBRE = consultation_consultation.ID_MEMBRE JOIN syst_couverture_structure ON syst_couverture_structure.ID_TYPE_STRUCTURE = consultation_consultation.ID_TYPE_STRUCTURE JOIN masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE WHERE consultation_consultation.TYPE_AFFILIE = '.$selected['ID_MEMBRE'].' AND consultation_consultation.ID_MEMBRE != '.$selected['ID_MEMBRE'].''); 
 
                     
                     $cmedicamenta=$this->Model->getRequete('SELECT consultation_pharmacie.DESCRIPTION AS PHARMACIE, consultation_medicament.TYPE_AFFILIE, membre_membre.NOM, membre_membre.PRENOM, consultation_medicament.DATE_CONSULTATION, consultation_medicament.MONTANT_A_PAYE_MIS, IF(consultation_medicament.STATUS_PAIEMENT =0, "Non Paye", "Bien paye") AS STATUS_PAIEMENT FROM `consultation_medicament` JOIN consultation_pharmacie ON consultation_pharmacie.ID_PHARMACIE = consultation_medicament.ID_PHARMACIE JOIN membre_membre ON membre_membre.ID_MEMBRE = consultation_medicament.ID_MEMBRE WHERE consultation_medicament.ID_MEMBRE = '.$selected['ID_MEMBRE'].' ');

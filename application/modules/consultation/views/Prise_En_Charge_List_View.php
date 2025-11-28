@@ -18,7 +18,21 @@
           <!-- left column -->
           <div class="col-md-12">
 
+     <form>
 
+          <div class="col-sm-12">
+
+
+                   
+            
+
+
+
+            
+
+          </div>
+
+          </form>
             <!-- jquery validation -->
             <div class="card card-primary">
               <div class="card-header">
@@ -27,6 +41,86 @@
 
 
               <div class="card-body table-responsive">
+
+
+            <div class="row">
+                  <div class="form-group col-md-2">
+                    <label for="ID_TYPE_STRUCTURE">
+                     Categorie Structure
+                   </label>
+                   <select class="form-control" name="ID_TYPE_STRUCTURE" id="ID_TYPE_STRUCTURE" onchange="getstructure(this),liste_search()">
+                    <option value="">-- Sélectionner --</option>
+                    <?php
+                    foreach($periode as $commun){
+                     ?>
+                     <option value="<?=$commun["ID_TYPE_STRUCTURE"]?>"><?=$commun["DESCRIPTION"]?></option>
+                     <?php
+                   }
+                   ?>
+
+                 </select>
+                 
+               </div>
+               <div class="form-group col-md-2">
+                <label for="">Structure sanitaire </label>
+              <select class="form-control select2" name="ID_STRUCTURE" id="ID_STRUCTURE" onchange="liste_search()">
+                <option value="">-- Sélectionner --</option>
+
+              </select>
+
+            
+            </div>
+
+            <div class="form-group col-md-2">
+              <label for="">Groupe <i class="text-danger"> *</i>
+
+              </label>
+
+            <select class="form-control select2" name="ID_GROUPE" id="ID_GROUPE" onchange="liste_search()">
+                <option value="">-- Sélectionner --</option>
+                <?php
+                foreach ($groupe as $key => $value) { 
+                  ?>
+                  <option value="<?=$value['ID_GROUPE']?>"><?=$value['NOM_GROUPE']?></option>
+                  <?php
+                } 
+                ?>
+            </select>
+
+             
+            </div>
+              
+              <div class="form-group col-sm-2">
+
+              <label for="ANNEE">
+
+                          Ann&eacute;e
+
+                          </label>
+
+                      <input type="number" id="year" name="year" 
+               min="1900" max="2099" step="1" 
+               placeholder="YYYY" value="2025" class="form-control"  onblur="liste_search()">
+                      </div>
+
+                   
+           
+
+
+            <div class="form-group col-sm-3">
+
+              <label for="ANNEE">
+
+                        Mois
+
+                          </label>
+
+                    <input type="number" id="month" name="month" 
+               min="0" max="12" step="1" 
+               placeholder="MM" value="0" class="form-control" onblur="liste_search()">
+                      </div>
+
+                     </div>
 
 
                <?php 
@@ -85,7 +179,33 @@ include VIEWPATH.'includes/new_script.php';
 
 <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
 
+<script>
+  function send(argument) {
+    alert('ok')
+  }
 
+</script>
+  <script>
+
+   function getstructure(va){
+    var ID_TYPE_STRUCTURE= $(va).val();
+    $('#ID_TYPE_STRUCTURE_ID').val(ID_TYPE_STRUCTURE);
+
+
+
+    var selectElement = document.getElementById("ID_TYPE_STRUCTURE");
+    var selectedOption = selectElement.options[selectElement.selectedIndex];
+    var selectedText = selectedOption.textContent;
+    $('#ID_TYPE_STRUCTURE_NEW').val(selectedText);
+
+
+    $.post('<?php echo base_url('consultation/Pdf_prise_en_charge/getstructure')?>',
+      {ID_TYPE_STRUCTURE:ID_TYPE_STRUCTURE},
+      function(data){
+        $('#ID_STRUCTURE').html(data);
+      });
+  }
+</script>
 <script>
   $(document).ready(function(){
       // Initialize the DataTable
@@ -97,7 +217,22 @@ include VIEWPATH.'includes/new_script.php';
     var url = "<?= base_url() ?>consultation/Pdf_prise_en_charge/listing/";
 
     var ID_PHARMACIE = $('#ID_PHARMACIE').val();  
-    var STATUT_PAIE = $('#STATUT_PAIE').val(); 
+    var STATUT_PAIE = $('#STATUT_PAIE').val();
+    var year = $('#year').val();
+    var month = $('#month').val();
+
+    var ID_TYPE_STRUCTURE = $('#ID_TYPE_STRUCTURE').val();
+    var ID_STRUCTURE = $('#ID_STRUCTURE').val();
+    var ID_GROUPE = $('#ID_GROUPE').val();
+
+
+    
+
+
+
+
+    
+ 
 
     var row_count = "1000000";
     table = $("#mytable").DataTable({
@@ -111,8 +246,13 @@ include VIEWPATH.'includes/new_script.php';
         url: url,
         type: "POST",
         data: {
-          ID_PHARMACIE: ID_PHARMACIE,
-          STATUT_PAIE: STATUT_PAIE
+          ID_PHARMACIE: ID_PHARMACIE, 
+          STATUT_PAIE: STATUT_PAIE,
+          year:year,
+          month:month,
+          ID_TYPE_STRUCTURE:ID_TYPE_STRUCTURE,
+          ID_STRUCTURE:ID_STRUCTURE,
+          ID_GROUPE:ID_GROUPE,
         },
 
       },

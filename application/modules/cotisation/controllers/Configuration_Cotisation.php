@@ -37,7 +37,7 @@ class Configuration_Cotisation extends CI_Controller {
 
 public function listing()
 {
-  $data['title']='Configuration Cotisation';
+  $data['title']='Configuration Cotisation'; 
   $data['stitle']='Configuration Cotisation';
 
   $data['groupe'] = $this->Model->getListOrdertwo('membre_groupe',array(),'NOM_GROUPE'); 
@@ -243,7 +243,22 @@ public function liste()
 {
 
 
- $query_principal='SELECT cotisation_cotisation_new.ID_COTISATION,cotisation_cotisation_new.PRIX_UNITAIRE,cotisation_cotisation_new.`MOIS_COTISATION`,cotisation_cotisation_new.`ID_GROUPE`,cotisation_cotisation_new.`ID_CATEGORIE_ASSURANCE`,membre_groupe.NOM_GROUPE,syst_categorie_assurance.DESCRIPTION,cotisation_cotisation_new.MONTANT_COTISATION,cotisation_cotisation_new.NOMBRE FROM `cotisation_cotisation_new` join membre_groupe on cotisation_cotisation_new.ID_GROUPE=membre_groupe.ID_GROUPE join syst_categorie_assurance on cotisation_cotisation_new.ID_CATEGORIE_ASSURANCE=syst_categorie_assurance.ID_CATEGORIE_ASSURANCE WHERE 1';
+$mois= $this->input->post('MOIS');
+$ID_GROUPE= $this->input->post('ID_GROUPE');
+
+$CRIT='';
+if (!empty($mois)) {
+ $CRIT.=' AND MOIS_COTISATION='.$mois.' ';
+}
+
+
+if (!empty($ID_GROUPE)) {
+ $CRIT.=' AND cotisation_cotisation_new.ID_GROUPE='.$ID_GROUPE.' ';
+}
+
+ 
+
+ $query_principal='SELECT cotisation_cotisation_new.ID_COTISATION,cotisation_cotisation_new.PRIX_UNITAIRE,cotisation_cotisation_new.`MOIS_COTISATION`,cotisation_cotisation_new.`ID_GROUPE`,cotisation_cotisation_new.`ID_CATEGORIE_ASSURANCE`,membre_groupe.NOM_GROUPE,syst_categorie_assurance.DESCRIPTION,cotisation_cotisation_new.MONTANT_COTISATION,cotisation_cotisation_new.NOMBRE FROM `cotisation_cotisation_new` join membre_groupe on cotisation_cotisation_new.ID_GROUPE=membre_groupe.ID_GROUPE join syst_categorie_assurance on cotisation_cotisation_new.ID_CATEGORIE_ASSURANCE=syst_categorie_assurance.ID_CATEGORIE_ASSURANCE WHERE 1 '.$CRIT.'';
 
 
  $var_search = !empty($_POST['search']['value']) ? $_POST['search']['value'] : null;
@@ -287,13 +302,38 @@ foreach ($resultat as $key)
   $chambr[]='<div class="text-right">'.number_format($key->MONTANT_COTISATION,0,","," ").'</div>';
 
 
-  $chambr[]='
+  $chambr[]='<div class="modal fade" id="deletecot'.$key->ID_COTISATION.'" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Liste des Medicaments pris</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+             <h3> Voulez-vous vraiment effectuer la suppression ?</h3>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+                 <a class="btn btn-danger btn-md" href="'.base_url('cotisation/Configuration_Cotisation/delete_cot/'.$key->ID_COTISATION).'">Oui</a>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+
+
   <div class="dropdown ">
   <a class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">Actions
   <span class="caret"></span></a>
   <ul class="dropdown-menu dropdown-menu-right">
   <li><a class="dropdown-item" target="__blank" href="'.base_url('cotisation/Facture_pdf_cotisation_mensuellle/charge_pdf/'.$key->ID_COTISATION.'').'">Facture </a> </li>
   <li><a class="dropdown-item"  href="'.base_url('cotisation/Configuration_Cotisation/index_update/'.$key->ID_COTISATION.'').'">Modifier </a> </li>
+   <li><a class="dropdown-item" data-toggle="modal" data-target="#deletecot'.$key->ID_COTISATION.'" href="#"> Supprimer</a> </li>
   </ul>
   </div>';
 
@@ -319,8 +359,20 @@ echo json_encode($output);
 public function liste_adhesion()
 {
 
+ $mois= $this->input->post('MOIS');
+$ID_GROUPE= $this->input->post('ID_GROUPE');
 
- $query_principal='SELECT cotisation_frais_adhesion_new.ID_COTISATION_ADHESION,cotisation_frais_adhesion_new.PRIX_UNITAIRE,cotisation_frais_adhesion_new.`MOIS_COTISATION`,cotisation_frais_adhesion_new.`ID_GROUPE`,cotisation_frais_adhesion_new.`ID_CATEGORIE_ASSURANCE`,membre_groupe.NOM_GROUPE,syst_categorie_assurance.DESCRIPTION,cotisation_frais_adhesion_new.MONTANT_COTISATION,cotisation_frais_adhesion_new.NOMBRE FROM `cotisation_frais_adhesion_new` join membre_groupe on cotisation_frais_adhesion_new.ID_GROUPE=membre_groupe.ID_GROUPE join syst_categorie_assurance on cotisation_frais_adhesion_new.ID_CATEGORIE_ASSURANCE=syst_categorie_assurance.ID_CATEGORIE_ASSURANCE WHERE 1';
+$CRIT='';
+if (!empty($mois)) {
+ $CRIT.=' AND MOIS_COTISATION='.$mois.' ';
+}
+
+
+if (!empty($ID_GROUPE)) {
+ $CRIT.=' AND cotisation_frais_adhesion_new.ID_GROUPE='.$ID_GROUPE.' ';
+}
+
+ $query_principal='SELECT cotisation_frais_adhesion_new.ID_COTISATION_ADHESION,cotisation_frais_adhesion_new.PRIX_UNITAIRE,cotisation_frais_adhesion_new.`MOIS_COTISATION`,cotisation_frais_adhesion_new.`ID_GROUPE`,cotisation_frais_adhesion_new.`ID_CATEGORIE_ASSURANCE`,membre_groupe.NOM_GROUPE,syst_categorie_assurance.DESCRIPTION,cotisation_frais_adhesion_new.MONTANT_COTISATION,cotisation_frais_adhesion_new.NOMBRE FROM `cotisation_frais_adhesion_new` join membre_groupe on cotisation_frais_adhesion_new.ID_GROUPE=membre_groupe.ID_GROUPE join syst_categorie_assurance on cotisation_frais_adhesion_new.ID_CATEGORIE_ASSURANCE=syst_categorie_assurance.ID_CATEGORIE_ASSURANCE WHERE 1 '.$CRIT.'';
 
  $var_search = !empty($_POST['search']['value']) ? $_POST['search']['value'] : null;
  $limit = 'LIMIT 0,10';
@@ -364,12 +416,36 @@ foreach ($resultat as $key)
 
 
   $chambr[]='
+  <div class="modal fade" id="deletead'.$key->ID_COTISATION_ADHESION.'" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Liste des cotisations</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+             <h3> Voulez-vous vraiment effectuer la suppression ?</h3>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+                 <a class="btn btn-danger btn-md" href="'.base_url('cotisation/Configuration_Cotisation/delete_ad/'.$key->ID_COTISATION_ADHESION).'">Oui</a>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
   <div class="dropdown ">
   <a class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">Actions
   <span class="caret"></span></a>
   <ul class="dropdown-menu dropdown-menu-right">
   
   <li><a class="dropdown-item"  href="'.base_url('cotisation/Configuration_Cotisation/index_update_adhesion/'.$key->ID_COTISATION_ADHESION.'').'">Modifier </a> </li>
+
+   <li><a class="dropdown-item" data-toggle="modal" data-target="#deletead'.$key->ID_COTISATION_ADHESION.'" href="#"> Supprimer</a> </li>
+
   </ul>
   </div>';
 
@@ -393,7 +469,21 @@ echo json_encode($output);
 public function liste_carte()
 {
 
- $query_principal='SELECT cotisation_frais_cartes_new.ID_COTISATION_CARTES,cotisation_frais_cartes_new.PRIX_UNITAIRE,cotisation_frais_cartes_new.`MOIS_COTISATION`,cotisation_frais_cartes_new.`ID_GROUPE`,cotisation_frais_cartes_new.`ID_CATEGORIE_ASSURANCE`,membre_groupe.NOM_GROUPE,syst_categorie_assurance.DESCRIPTION,cotisation_frais_cartes_new.MONTANT_COTISATION,cotisation_frais_cartes_new.NOMBRE FROM `cotisation_frais_cartes_new` join membre_groupe on cotisation_frais_cartes_new.ID_GROUPE=membre_groupe.ID_GROUPE join syst_categorie_assurance on cotisation_frais_cartes_new.ID_CATEGORIE_ASSURANCE=syst_categorie_assurance.ID_CATEGORIE_ASSURANCE WHERE 1';
+
+$mois= $this->input->post('MOIS');
+$ID_GROUPE= $this->input->post('ID_GROUPE');
+
+$CRIT='';
+if (!empty($mois)) {
+ $CRIT.=' AND MOIS_COTISATION='.$mois.' ';
+}
+
+
+if (!empty($ID_GROUPE)) {
+ $CRIT.=' AND cotisation_frais_cartes_new.ID_GROUPE='.$ID_GROUPE.' ';
+}
+
+ $query_principal='SELECT cotisation_frais_cartes_new.ID_COTISATION_CARTES,cotisation_frais_cartes_new.PRIX_UNITAIRE,cotisation_frais_cartes_new.`MOIS_COTISATION`,cotisation_frais_cartes_new.`ID_GROUPE`,cotisation_frais_cartes_new.`ID_CATEGORIE_ASSURANCE`,membre_groupe.NOM_GROUPE,syst_categorie_assurance.DESCRIPTION,cotisation_frais_cartes_new.MONTANT_COTISATION,cotisation_frais_cartes_new.NOMBRE FROM `cotisation_frais_cartes_new` join membre_groupe on cotisation_frais_cartes_new.ID_GROUPE=membre_groupe.ID_GROUPE join syst_categorie_assurance on cotisation_frais_cartes_new.ID_CATEGORIE_ASSURANCE=syst_categorie_assurance.ID_CATEGORIE_ASSURANCE WHERE 1 '.$CRIT.'';
 
 
  $var_search = !empty($_POST['search']['value']) ? $_POST['search']['value'] : null;
@@ -438,11 +528,34 @@ foreach ($resultat as $key)
 
 
   $chambr[]='
+   <div class="modal fade" id="deletecart'.$key->ID_COTISATION_CARTES.'" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Liste des cotisations</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+             <h3> Voulez-vous vraiment effectuer la suppression ?</h3>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+                 <a class="btn btn-danger btn-md" href="'.base_url('cotisation/Configuration_Cotisation/delete_cart/'.$key->ID_COTISATION_CARTES).'">Oui</a>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
   <div class="dropdown ">
   <a class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">Actions
   <span class="caret"></span></a>
   <ul class="dropdown-menu dropdown-menu-right">
   <li><a class="dropdown-item"  href="'.base_url('cotisation/Configuration_Cotisation/index_update_carte/'.$key->ID_COTISATION_CARTES.'').'">Modifier </a> </li>
+
+  <li><a class="dropdown-item" data-toggle="modal" data-target="#deletecart'.$key->ID_COTISATION_CARTES.'" href="#"> Supprimer</a> </li>
   </ul>
   </div>';
 
@@ -679,6 +792,40 @@ public function desactiver($id)
   $this->session->set_flashdata(array('message'=>$message));
   redirect(base_url('cotisation/Configuration_Cotisation/listing'));
 }
+
+public function delete_cot($id)
+{
+  $this->Model->delete('cotisation_cotisation_new',array('ID_COTISATION'=>$id));
+  $message = "<div class='alert alert-danger' id='message'>
+  Cotisation supprimé avec succés
+  <button type='button' class='close' data-dismiss='alert'>&times;</button>
+  </div>";
+  $this->session->set_flashdata(array('message'=>$message));
+  redirect(base_url('cotisation/Configuration_Cotisation/listing'));
+}
+
+public function delete_ad($id)
+{
+  $this->Model->delete('cotisation_frais_adhesion_new',array('ID_COTISATION_ADHESION'=>$id));
+  $message = "<div class='alert alert-danger' id='message'>
+  Frais adhésion supprimé avec succés
+  <button type='button' class='close' data-dismiss='alert'>&times;</button>
+  </div>";
+  $this->session->set_flashdata(array('message'=>$message));
+  redirect(base_url('cotisation/Configuration_Cotisation/listing'));
+}
+
+public function delete_cart($id)
+{
+  $this->Model->delete('cotisation_frais_cartes_new',array('ID_COTISATION_CARTES'=>$id));
+  $message = "<div class='alert alert-danger' id='message'>
+  Frais carte supprimé avec succés
+  <button type='button' class='close' data-dismiss='alert'>&times;</button>
+  </div>";
+  $this->session->set_flashdata(array('message'=>$message));
+  redirect(base_url('cotisation/Configuration_Cotisation/listing'));
+}
+
 
 public function reactiver($id)
 {

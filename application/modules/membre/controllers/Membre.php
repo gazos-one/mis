@@ -1159,7 +1159,7 @@ public function addEmploi()
       $realdate = strtotime('-'.$conf['AGE_MINIMALE_AFFILIE'].' year', $todaydate);
       $realdate = date('d/m/Y', $realdate);
       $data['datemin'] = $realdate;
-      $data['display_modal'] = 0;
+      $data['display_modal'] = 0; 
 
       $this->load->view('Membre_Ayant_Droits_View',$data);
     }

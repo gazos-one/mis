@@ -63,7 +63,9 @@ public function getstructure()
 
 public function getaffilie_by_group()
 {
-  $commune= $this->Model->getRequete("SELECT membre_membre.ID_MEMBRE,membre_membre.NOM,membre_membre.PRENOM,membre_membre.CODE_AFILIATION FROM membre_membre join membre_groupe_membre on membre_membre.ID_MEMBRE=membre_groupe_membre.ID_MEMBRE where membre_groupe_membre.ID_GROUPE=".$this->input->post('ID_GROUPE')."");
+  // $commune= $this->Model->getRequete("SELECT membre_membre.ID_MEMBRE,membre_membre.NOM,membre_membre.PRENOM,membre_membre.CODE_AFILIATION FROM membre_membre join membre_groupe_membre on membre_membre.ID_MEMBRE=membre_groupe_membre.ID_MEMBRE where membre_groupe_membre.ID_GROUPE=".$this->input->post('ID_GROUPE')."");
+
+   $commune= $this->Model->getRequete("SELECT membre_membre.ID_MEMBRE,membre_membre.NOM,membre_membre.PRENOM,membre_membre.CODE_AFILIATION FROM membre_membre join membre_groupe_membre on membre_membre.ID_MEMBRE=membre_groupe_membre.ID_MEMBRE where 1");
 
   $datas= '<option value="">-- Sélectionner --</option>';
 
@@ -165,8 +167,8 @@ public function add()
 
 public function getOne($id)
  {
-  $data['title']='Enregistrement de prise en charge';
-  $data['stitle']='Enregistrement de Prise en Charge';
+  $data['title']='Modification de prise en charge';
+  $data['stitle']='Modification de Prise en Charge';
   $data['periode'] = $this->Model->getListOrdertwo('syst_couverture_structure',array(),'DESCRIPTION'); 
   $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
   $data['affilie']= $this->Model->getList("membre_membre",array('IS_AFFILIE'=>0));
@@ -190,8 +192,6 @@ public function update()
   $this->form_validation->set_rules('DATE_CONSULTATION', 'Date', 'required');
   $this->form_validation->set_rules('ID_CONSULTATION_TYPE', 'Type de consultation', 'required');
 
-
-
   if ($this->form_validation->run() == FALSE){
     $message = "<div class='alert alert-danger'>
     Consultation non enregistr&eacute;e
@@ -209,7 +209,7 @@ public function update()
     $data['selected']= $this->Model->getOne("prise_en_charge_hospitalisation",array('ID_PRISE_CHARGE'=>$this->input->post('ID_PRISE_CHARGE')));
 
 
-    $this->load->view('Enregistrer_Consultation_Add_View',$data);
+    $this->load->view('Prise_en_charge_Update_View',$data);
   }
   else{
 
@@ -223,8 +223,9 @@ public function update()
       'ID_CONSULTATION_TYPE'=>$this->input->post('ID_CONSULTATION_TYPE'),       
     );
 
+
     
-    $this->Model->update('prise_en_charge_hospitalisation',array('ID_PRISE_CHARGE'=>$this->input->post('ID_STRUCTURE')),$data);
+    $this->Model->update('prise_en_charge_hospitalisation',array('ID_PRISE_CHARGE'=>$this->input->post('ID_PRISE_CHARGE')),$data);
 
     $message = "<div class='alert alert-success' id='message'>
     Consultation modifi&eacute; avec succés
@@ -254,6 +255,14 @@ public function liste()
   
   // $conf = $this->Model->getOne('syst_config',array('ID_CONFIG'=>1));
 
+  $data['periode'] = $this->Model->getListOrdertwo('syst_couverture_structure',array(),'DESCRIPTION'); 
+  $data['province'] = $this->Model->getListOrdertwo('syst_provinces',array(),'PROVINCE_NAME'); 
+  $data['affilie']= $this->Model->getList("membre_membre",array('IS_AFFILIE'=>0));
+  $data['groupe']= $this->Model->getList("membre_groupe");
+
+  $data['tconsultation'] = $this->Model->getRequete('SELECT * FROM consultation_type WHERE ID_CONSULTATION_TYPE IN (1,2,5,6,8)'); 
+  $data['CategorieAssurance'] = $this->Model->getListOrdertwo('syst_categorie_assurance',array('ID_REGIME_ASSURANCE'=>1,'STATUS'=>1),'DESCRIPTION'); 
+
   $this->load->view('Prise_En_Charge_List_View',$data);
 }
 
@@ -261,20 +270,53 @@ public function liste()
 public function listing()
 {
 
+  $ID_TYPE_STRUCTURE=$this->input->post('ID_TYPE_STRUCTURE');
   $ID_STRUCTURE=$this->input->post('ID_STRUCTURE');
-  $STATUT_PAIE=$this->input->post('STATUT_PAIE');
+  $ID_GROUPE=$this->input->post('ID_GROUPE');
 
-  $hopital=''; 
-  if(!empty($ID_STRUCTURE)){
-    $hopital=' AND faf.ID_STRUCTURE='.$ID_STRUCTURE;
+
+  $year=$this->input->post('year');
+  $month=$this->input->post('month');
+
+
+  if ($month < 10 && $month != 0) {
+   $month="0".$month; 
   }
+
+  $crit= '';
+   if (!empty($year)) {
+   
+   $crit.= 'and DATE_FORMAT(DATE_CONSULTATION,"%Y")="'.$year.'"';
+
+  }
+
+  if (!empty($month) && $month != 0) {
+   
+   $crit.= 'and DATE_FORMAT(DATE_CONSULTATION,"%m")="'.$month.'"';
+
+  }
+ 
+  
 
   $condi=''; 
-  if(!empty($STATUT_PAIE)){
-    $condi=' AND STATUT_PAIE='.$STATUT_PAIE;
+
+  if(!empty($ID_TYPE_STRUCTURE)){
+    $condi.=' AND pech.ID_STRUCTURE='.$ID_TYPE_STRUCTURE;
   }
 
-  $query_principal ="SELECT `ID_PRISE_CHARGE`,scs.DESCRIPTION AS type_structure, sca.DESCRIPTION AS categorie,sca.PLAFOND_COUVERTURE_HOSP_JOURS, mss.DESCRIPTION AS structure_sanitaire, concat(mm.NOM,' ',mm.PRENOM) AS affilie, concat(mbr.NOM,' ',mbr.PRENOM) AS beneficiare ,mbr.IS_CONJOINT, `DATE_CONSULTATION`, `STATUS_PAIEMENT`, ct.DESCRIPTION as type_consultation, `DATE_INSERT` FROM  prise_en_charge_hospitalisation pech JOIN syst_couverture_structure scs ON pech.ID_TYPE_STRUCTURE=scs.ID_TYPE_STRUCTURE JOIN consultation_type ct ON pech.ID_CONSULTATION_TYPE=ct.ID_CONSULTATION_TYPE JOIN masque_stucture_sanitaire mss ON mss.ID_STRUCTURE=pech.ID_STRUCTURE JOIN membre_membre mm ON mm.ID_MEMBRE=pech.TYPE_AFFILIE JOIN membre_membre mbr ON mbr.ID_MEMBRE=pech.ID_MEMBRE JOIN membre_carte_membre mcm ON mcm.ID_MEMBRE=pech.TYPE_AFFILIE JOIN membre_carte mc ON mc.ID_CARTE=mcm.ID_CARTE JOIN syst_categorie_assurance sca ON sca.ID_CATEGORIE_ASSURANCE=mc.ID_CATEGORIE_ASSURANCE WHERE 1 ";
+  if(!empty($ID_STRUCTURE)){
+    $condi.=' AND pech.ID_STRUCTURE='.$ID_STRUCTURE;
+  }
+
+   if(!empty($ID_GROUPE)){
+    $condi.=' AND pech.ID_STRUCTURE='.$ID_GROUPE;
+   }
+
+
+  
+   
+ 
+  $query_principal ="SELECT `ID_PRISE_CHARGE`,scs.DESCRIPTION AS type_structure, sca.DESCRIPTION AS categorie,sca.PLAFOND_COUVERTURE_HOSP_JOURS, mss.DESCRIPTION AS structure_sanitaire, concat(mm.NOM,' ',mm.PRENOM) AS affilie, concat(mbr.NOM,' ',mbr.PRENOM) AS beneficiare ,mbr.IS_CONJOINT, `DATE_CONSULTATION`, `STATUS_PAIEMENT`, ct.DESCRIPTION as type_consultation, `DATE_INSERT` FROM  prise_en_charge_hospitalisation pech LEFT JOIN syst_couverture_structure scs ON pech.ID_TYPE_STRUCTURE=scs.ID_TYPE_STRUCTURE LEFT JOIN consultation_type ct ON pech.ID_CONSULTATION_TYPE=ct.ID_CONSULTATION_TYPE LEFT JOIN masque_stucture_sanitaire mss ON mss.ID_STRUCTURE=pech.ID_STRUCTURE LEFT JOIN membre_membre mm ON mm.ID_MEMBRE=pech.TYPE_AFFILIE LEFT JOIN membre_membre mbr ON mbr.ID_MEMBRE=pech.ID_MEMBRE LEFT JOIN membre_carte_membre mcm ON mcm.ID_MEMBRE=pech.TYPE_AFFILIE LEFT JOIN membre_carte mc ON mc.ID_CARTE=mcm.ID_CARTE LEFT JOIN syst_categorie_assurance sca ON sca.ID_CATEGORIE_ASSURANCE=mc.ID_CATEGORIE_ASSURANCE WHERE 1 ".$crit." ".$condi."";
 
   $var_search = !empty($_POST['search']['value']) ? $this->db->escape_like_str($_POST['search']['value']) : null;
 
@@ -325,7 +367,8 @@ public function listing()
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
-                '.base_url('consultation/Pdf_prise_en_charge/delete/'.$key->ID_PRISE_CHARGE).'
+                 <a class="btn btn-danger btn-md" href="'.base_url('consultation/Pdf_prise_en_charge/delete/'.$key->ID_PRISE_CHARGE).'">Oui</a>
+                
               </div>
             </div>
           </div>
@@ -335,7 +378,7 @@ public function listing()
     <a class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">Actions
     <span class="caret"></span></a>
     <ul class="dropdown-menu dropdown-menu-right">
-    <li><a class="dropdown-item" target="_blank" href="'.base_url('consultation/Pdf_prise_en_charge/getOne/'.$key->ID_PRISE_CHARGE).'"> Modifier</a> </li>
+    <li><a class="dropdown-item" href="'.base_url('consultation/Pdf_prise_en_charge/getOne/'.$key->ID_PRISE_CHARGE).'"> Modifier</a> </li>
     <li><a class="dropdown-item" data-toggle="modal" data-target="#delete'.$key->ID_PRISE_CHARGE.'" href="#"> Supprimer</a> </li>
 
     <li><a class="dropdown-item" target="_blank" href="'.base_url('consultation/Pdf_prise_en_charge/prise_en_charge_pdf/'.$key->ID_PRISE_CHARGE).'"> Pdf</a> </li>
@@ -593,6 +636,21 @@ $pdf->Cell(0, 5, utf8_decode('E-mail : missante2020@gmail.com '), 0, 0, 'C');
 
 $pdf->Output('I');
 
+}
+
+
+public function delete($id)
+{
+  $this->Model->delete('prise_en_charge_hospitalisation',array('ID_PRISE_CHARGE'=>$id));
+    
+    
+  
+    $message = "<div class='alert alert-danger' id='message'>
+                              Prise en charge supprim&eacute; avec succés
+                              <button type='button' class='close' data-dismiss='alert'>&times;</button>
+                        </div>";
+      $this->session->set_flashdata(array('message'=>$message));
+        redirect(base_url('consultation/Pdf_prise_en_charge/liste'));  
 }
 
 

@@ -47,7 +47,10 @@ class Enregistrer_Consultation extends CI_Controller {
 
     public function getaffilie_by_group()
     {
-    $commune= $this->Model->getRequete("SELECT membre_membre.ID_MEMBRE,membre_membre.NOM,membre_membre.PRENOM,membre_membre.CODE_AFILIATION FROM membre_membre join membre_groupe_membre on membre_membre.ID_MEMBRE=membre_groupe_membre.ID_MEMBRE where membre_groupe_membre.ID_GROUPE=".$this->input->post('ID_GROUPE')."");
+    // $commune= $this->Model->getRequete("SELECT membre_membre.ID_MEMBRE,membre_membre.NOM,membre_membre.PRENOM,membre_membre.CODE_AFILIATION FROM membre_membre join membre_groupe_membre on membre_membre.ID_MEMBRE=membre_groupe_membre.ID_MEMBRE where membre_groupe_membre.ID_GROUPE=".$this->input->post('ID_GROUPE')."");
+
+    $commune= $this->Model->getRequete("SELECT membre_membre.ID_MEMBRE,membre_membre.NOM,membre_membre.PRENOM,membre_membre.CODE_AFILIATION FROM membre_membre join membre_groupe_membre on membre_membre.ID_MEMBRE=membre_groupe_membre.ID_MEMBRE where 1");
+
     
     $datas= '<option value="">-- Sélectionner --</option>';
    

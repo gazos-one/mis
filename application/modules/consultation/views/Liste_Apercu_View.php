@@ -89,7 +89,9 @@
 
     function my_liste(id) {
 
-   
+var annee=<?= $annee ?>;
+var mois=<?= $mois ?>;
+var ID_CONSULTATION_TYPE=<?= $ID_CONSULTATION_TYPE ?>;
  
     var row_count ="1000000";
 
@@ -101,7 +103,7 @@
       "ajax":{
         url:"<?php echo base_url('consultation/Liste_Consultation_Hopital/apercu_liste');?>",
         type:"POST",
-        data:{id:id},
+        data:{id:id,annee:annee,mois:mois,ID_CONSULTATION_TYPE:ID_CONSULTATION_TYPE},
       },
       lengthMenu: [[10,50, 100, row_count], [10,50, 100, "All"]],
       pageLength: 10,
