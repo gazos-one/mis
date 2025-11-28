@@ -78,7 +78,7 @@ class Liste_Consultation_Hopital extends CI_Controller
       }
 
 
-      $query_principal = 'SELECT DISTINCT(consultation_consultation.ID_STRUCTURE), masque_stucture_sanitaire.DESCRIPTION AS HOPITAL,consultation_consultation.ID_CONSULTATION,COUNT(consultation_consultation.ID_CONSULTATION) AS NOMBRE, SUM(consultation_consultation.MONTANT_CONSULTATION) AS MONTANT_CONSULTATION, SUM(consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER FROM consultation_consultation JOIN masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE WHERE 1 '.$crit_pyment.' AND consultation_consultation.ID_CONSULTATION_TYPE NOT IN (3,7) '.$critaireanne.' '.$critaire2.' ';
+      $query_principal = 'SELECT DISTINCT(consultation_consultation.ID_STRUCTURE), masque_stucture_sanitaire.DESCRIPTION AS HOPITAL,consultation_consultation.ID_CONSULTATION,COUNT(consultation_consultation.ID_CONSULTATION) AS NOMBRE, SUM(consultation_consultation.MONTANT_CONSULTATION) AS MONTANT_CONSULTATION, SUM(consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER FROM consultation_consultation JOIN masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE WHERE 1 '.$crit_pyment.' AND consultation_consultation.ID_CONSULTATION_TYPE NOT IN (3,7) and consultation_consultation.ID_STRUCTURE NOT IN (SELECT ID_STRUCTURE from consultation_pharmacie) '.$critaireanne.' '.$critaire2.' ';
  
      $var_search = !empty($_POST['search']['value']) ? $_POST['search']['value'] : null;
      $limit = 'LIMIT 0,10';
@@ -101,7 +101,7 @@ class Liste_Consultation_Hopital extends CI_Controller
      $query_filter = $query_principal . ' ' . $critaire . '  ' . $search. ' ' . $groupby;
      $fetch_client = $this->Model->datatable($query_secondaire);
 
-     $query_principals = 'SELECT DISTINCT(consultation_consultation.ID_STRUCTURE), consultation_centre_optique.DESCRIPTION AS HOPITAL,consultation_consultation.ID_CONSULTATION,COUNT(consultation_consultation.ID_CONSULTATION) AS NOMBRE, SUM(consultation_consultation.MONTANT_CONSULTATION) AS MONTANT_CONSULTATION, SUM(consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER FROM consultation_consultation JOIN consultation_centre_optique ON consultation_centre_optique.ID_CENTRE_OPTIQUE = consultation_consultation.ID_STRUCTURE WHERE 1 '.$crit_pyment.' AND consultation_consultation.ID_CONSULTATION_TYPE IN (3,7)  '.$critaireanne.' '.$critaire2.' ';
+     $query_principals = 'SELECT DISTINCT(consultation_consultation.ID_STRUCTURE), consultation_centre_optique.DESCRIPTION AS HOPITAL,consultation_consultation.ID_CONSULTATION,COUNT(consultation_consultation.ID_CONSULTATION) AS NOMBRE, SUM(consultation_consultation.MONTANT_CONSULTATION) AS MONTANT_CONSULTATION, SUM(consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER FROM consultation_consultation JOIN consultation_centre_optique ON consultation_centre_optique.ID_CENTRE_OPTIQUE = consultation_consultation.ID_STRUCTURE WHERE 1 '.$crit_pyment.' AND consultation_consultation.ID_CONSULTATION_TYPE IN (3,7) and consultation_consultation.ID_STRUCTURE NOT IN (SELECT ID_STRUCTURE from consultation_pharmacie)  '.$critaireanne.' '.$critaire2.' ';
  
      // $var_searchs = !empty($_POST['search']['value']) ? $_POST['search']['value'] : null;
      // $limits = 'LIMIT 0,10';
@@ -313,6 +313,300 @@ class Liste_Consultation_Hopital extends CI_Controller
 
 
     }
+
+
+     public function liste2()
+    {
+
+
+      $ANNEE=$this->input->post('ANNEE');
+      $ID_CONSULTATION_TYPE=$this->input->post('ID_CONSULTATION_TYPE');
+      $STATUS_PAIEMENT=$this->input->post('STATUS_PAIEMENT');
+      $MOIS=$this->input->post('MOIS');
+
+
+      $crit_pyment=' AND consultation_consultation.STATUS_PAIEMENT = '.$STATUS_PAIEMENT.'';
+
+       $crit=" AND consultation_medicament.STATUS_PAIEMENT = ".$STATUS_PAIEMENT."";
+          
+      if (!empty($ANNEE)) {
+        $data['ANNEE']=$ANNEE;
+        $critaireanne= ' AND DATE_FORMAT(DATE_CONSULTATION,"%Y") Like "%'.$ANNEE.'%"';
+      }   
+      else{
+        $ANNEE = date('Y');
+        $data['ANNEE']=date('Y');
+        $critaireanne = ' AND DATE_FORMAT(DATE_CONSULTATION,"%Y") Like "%'.$ANNEE.'%"';
+      }
+
+      if (!empty($MOIS)) {
+        
+        $critairemois= ' AND DATE_FORMAT(DATE_CONSULTATION,"%m") Like "%'.$MOIS.'%"';
+      }   
+      else{
+        $MOIS = date('m');
+        
+        $critairemois = ' AND DATE_FORMAT(DATE_CONSULTATION,"%m") Like "%'.$MOIS.'%"';
+      }
+
+
+      if (!empty($ID_CONSULTATION_TYPE)) {
+        $data['ID_CONSULTATION_TYPE']=$ID_CONSULTATION_TYPE;
+        $critaire2= ' AND ID_CONSULTATION_TYPE  = '.$ID_CONSULTATION_TYPE.' ';
+      }   
+      else{
+        $ID_CONSULTATION_TYPE = 1;
+        $data['ID_CONSULTATION_TYPE']= 1;
+        $critaire2 = ' ';
+      }
+
+
+      $query_principal = 'SELECT DISTINCT(consultation_consultation.ID_STRUCTURE), masque_stucture_sanitaire.DESCRIPTION AS HOPITAL,consultation_consultation.ID_CONSULTATION,COUNT(consultation_consultation.ID_CONSULTATION) AS NOMBRE, SUM(consultation_consultation.MONTANT_CONSULTATION) AS MONTANT_CONSULTATION, SUM(consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER FROM consultation_consultation JOIN masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE WHERE 1 '.$crit_pyment.' AND consultation_consultation.ID_CONSULTATION_TYPE NOT IN (3,7) and consultation_consultation.ID_STRUCTURE IN (SELECT ID_STRUCTURE from consultation_pharmacie) '.$critaireanne.' '.$critaire2.' ';
+ 
+     $var_search = !empty($_POST['search']['value']) ? $_POST['search']['value'] : null;
+     $limit = 'LIMIT 0,10';
+     if ($_POST['length'] != -1) {
+       $limit = 'LIMIT ' . $_POST["start"] . ',' . $_POST["length"];
+     }
+ 
+     $order_by = '';
+     if (!empty($order_by)) {
+       $order_by .= isset($_POST['order']) ? ' ORDER BY ' . $_POST['order']['0']['column'] . '  ' . $_POST['order']['0']['dir'] : ' ORDER BY ID_STRUCTURE ASC';
+     }
+ 
+     $search = !empty($_POST['search']['value']) ? (' AND masque_stucture_sanitaire.DESCRIPTION LIKE "%' . $var_search . '%" ') :'';
+ 
+     $critaire = '';
+     $order_by="  ORDER BY HOPITAL";
+     $groupby=' GROUP BY ID_STRUCTURE, HOPITAL';
+ 
+     $query_secondaire = $query_principal . '  ' . $critaire . '  ' . $search . '  ' . $groupby . '  ' . $order_by . '   ' . $limit;
+     $query_filter = $query_principal . ' ' . $critaire . '  ' . $search. ' ' . $groupby;
+     $fetch_client = $this->Model->datatable($query_secondaire);
+
+     $query_principals = 'SELECT DISTINCT(consultation_consultation.ID_STRUCTURE), consultation_centre_optique.DESCRIPTION AS HOPITAL,consultation_consultation.ID_CONSULTATION,COUNT(consultation_consultation.ID_CONSULTATION) AS NOMBRE, SUM(consultation_consultation.MONTANT_CONSULTATION) AS MONTANT_CONSULTATION, SUM(consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER FROM consultation_consultation JOIN consultation_centre_optique ON consultation_centre_optique.ID_CENTRE_OPTIQUE = consultation_consultation.ID_STRUCTURE WHERE 1 '.$crit_pyment.' AND consultation_consultation.ID_CONSULTATION_TYPE IN (3,7) and consultation_consultation.ID_STRUCTURE IN (SELECT ID_STRUCTURE from consultation_pharmacie)  '.$critaireanne.' '.$critaire2.' ';
+ 
+     // $var_searchs = !empty($_POST['search']['value']) ? $_POST['search']['value'] : null;
+     // $limits = 'LIMIT 0,10';
+     // if ($_POST['length'] != -1) {
+     //   $limits = 'LIMIT ' . $_POST["start"] . ',' . $_POST["length"];
+     // }
+ 
+     // $order_bys = '';
+     // if (!empty($order_bys)) {
+     //   $order_bys .= isset($_POST['order']) ? ' ORDER BY ' . $_POST['order']['0']['column'] . '  ' . $_POST['order']['0']['dir'] : ' ORDER BY ID_CLIENT ASC';
+     // }
+ 
+     $search = !empty($_POST['search']['value']) ? (' AND (consultation_centre_optique.DESCRIPTION LIKE "%' . $var_search . '%" )') :'';
+ 
+      $critaires = '';
+     // $order_bys="ORDER BY consultation_centre_optique.DESCRIPTION";
+     // $groupby='GROUP BY ID_STRUCTURE, HOPITAL';
+ 
+     $query_secondaires = $query_principals . ' ' . $critaires . ' ' . $search . ' ' . $groupby . ' ' . $order_by . '   ' . $limit;
+     $query_filters = $query_principals . ' ' . $critaires . ' ' . $search. ' ' . $groupby;
+
+   // print_r($query_secondaires);die();
+     $fetch_clients = $this->Model->datatable($query_secondaires);
+
+     $resultall = array_merge($fetch_clients, $fetch_client);
+ 
+     $data = array();
+
+    
+     
+     foreach ($resultall as $val)
+     {
+      //  if($val->STATUT=='Actif'){
+      //   $user='désactiver';
+      // }else{
+      //  $user='activer';
+      // }
+
+      
+       $montant_mis_medi=$this->Model->getRequeteOne('SELECT DISTINCT(consultation_pharmacie.DESCRIPTION) AS PHARMACIE, consultation_pharmacie.ID_PHARMACIE, COUNT(consultation_medicament.ID_CONSULTATION_MEDICAMENT) AS NOMBRE, SUM(consultation_medicament.MONTANT_TOTAL_ACHAT) AS MONTANT_TOTAL_ACHAT, SUM(MONTANT_A_PAYE_MIS) AS MONTANT_MIS FROM `consultation_medicament` JOIN consultation_pharmacie ON consultation_pharmacie.ID_PHARMACIE = consultation_medicament.ID_PHARMACIE WHERE 1 and consultation_pharmacie.ID_STRUCTURE='.$val->ID_STRUCTURE.' '.$critaire .' '.$crit.' '.$critaireanne.' '.$critairemois.'');
+
+       $verify=$this->Model->getOne('consultation_pharmacie',array("ID_STRUCTURE"=>$val->ID_STRUCTURE));
+
+       if (!empty($verify)) {
+        
+       }
+
+       $MONTANT_MIS="-";
+       if (($val->MONTANT_CONSULTATION != null ) && ($val->MONTANT_A_PAYER != null )) {
+       $MONTANT_MIS=$val->MONTANT_CONSULTATION-$val->MONTANT_A_PAYER;
+       }
+       $TOTAL_MONTANT_MIS='-';
+       if ($montant_mis_medi['MONTANT_MIS'] != null) {
+       $TOTAL_MONTANT_MIS=$montant_mis_medi['MONTANT_MIS'] + $MONTANT_MIS;
+       }
+       $post = array();
+      //  $post[] = $u++; 
+       $post[] = $val->HOPITAL;
+       $post[] = $val->NOMBRE;
+       $post[]='<div class="text-right">'.number_format($val->MONTANT_CONSULTATION,0,',',' ').'</div>';
+       $post[]='<div class="text-right">'.number_format($val->MONTANT_A_PAYER,0,',',' ').'</div>';
+       $post[]='<div class="text-right">'.number_format($MONTANT_MIS,0,',',' ').'</div>';
+       $post[]='<div class="text-right">'.number_format($montant_mis_medi['MONTANT_MIS'],0,',',' ').'</div>';
+       $post[]='<div class="text-right">'.number_format($TOTAL_MONTANT_MIS,0,',',' ').'</div>';
+
+
+
+       $post[] = $ANNEE;
+       $post[] = $MOIS;
+      // '.$critaireanne .'
+       
+
+       // $post[]='
+       // <div class="modal fade" id="desactcat'.$val->ID_STRUCTURE.'" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+       //    <div class="modal-dialog modal-xl">
+       //      <div class="modal-content">
+       //        <div class="modal-header">
+       //          <h4 class="modal-title" id="myModalLabel">Liste des consultations: '.$val->HOPITAL.'</h4>
+       //          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+       //            <span aria-hidden="true">&times;</span>
+       //          </button>
+       //        </div>
+       //        <div class="modal-body">             
+       //        '.$tableliste.'
+       //        </div>
+       //        <div class="modal-footer">
+       //          <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+       //        </div>
+       //      </div> 
+       //    </div>
+       //  </div> 
+       //  <button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#desactcat'.$val->ID_STRUCTURE.'">Apercu</button>';
+       
+        $post[] = '
+
+          <div class="dropdown ">
+                             <a class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">Actions
+                            <span class="caret"></span></a>
+                           <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a class="dropdown-item btn-danger" href="'.base_url('consultation/Liste_Consultation_Hopital/apercu/'.$val->ID_STRUCTURE.'/'.$ANNEE.'/'.$MOIS.'/'.$ID_CONSULTATION_TYPE).'"> Apercu </a> </li> 
+                            <li><a class="dropdown-item btn-danger" href="'.base_url('consultation/Liste_Consultation/index_update/'.$val->ID_CONSULTATION.'').'"> Modifier </a> </li> 
+                          
+                            <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#desactcat'.$val->ID_CONSULTATION.'"> Effacer </a> </li>  
+                                                     
+                            
+                            </ul>
+                          </div>';
+        // $post[] = '<a class="btn btn-primary btn-xs" href="'.base_url('consultation/Liste_Consultation_Hopital/details/'.$val->ID_STRUCTURE.'/'.$ANNEE.'/0').'"> D&eacute;tails Paiements </a>';
+
+         //$post[] = '<a class="btn btn-danger btn-xs" href="'.base_url('consultation/Liste_Consultation_Hopital/delete/'.$val->ID_CONSULTATION).'"> Supprimer</a>';
+       //  $post[] = '<button type="button" class="btn btn-danger btn-xs" data-toggle="modal" title="Supprimer la consultation"   data-target="#delet'.$val->ID_CONSULTATION.'"><i class="fas fa-trash"></i></button>
+
+       // <div class="modal fade" id="delet'.$val->ID_CONSULTATION.'"  tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+       //      <div class="modal-dialog" role="document">
+       //               <div class="modal-content">
+       //                 <div class="modal-header">
+       //                  <h5 class="modal-title" id="exampleModalLabel">Voulez-vous supprimer cette consultation ?</h5>
+       //                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+       //                     <span aria-hidden="true">&times;</span>
+       //                   </button>
+       //                 </div>
+       //                 <div class="modal-body">
+                    
+       //                 </div>
+       //                 <div class="modal-footer">
+       //                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Non</button>
+       //                   <a class="btn btn-danger btn-md" href="' . base_url("client/Client/traiter/". md5($val->ID_CLIENT)) . '">Oui</a>
+       //                 </div>
+       //              </div>
+       //             </div>
+       //           </div>
+
+       //  ';
+
+   
+
+      //  $post[] = $val->TEL_CLIENT.'<br>'.$val->EMAIL_CLIENT;
+      //  $post[] = $val->ADRESSE;
+      //  $post[] = $val->DEVIS;
+      //  $post[] = $val->STATUT;
+      //  $post[] = date('d/m/Y H:i:s', strtotime($val->DATE_INSERTION));
+      //  $action = "<a class='btn btn-success btn-sm' href='".base_url('client/Client/edit/').md5($val->ID_CLIENT)."'><i class='fas fa-edit'></i></a>
+      //         <button type='button' class='btn btn-danger btn-sm btn-hapus' data-toggle='modal' data-target='#exampleModal".$val->ID_CLIENT."'>
+      //            <i class='fas fa-trash'></i></button>";
+ 
+      // $action .= "<div class='modal fade' id='exampleModal".$val->ID_CLIENT."' tabindex='-1' role='dialog' aria-labelledby='exampleModalLabel' aria-hidden='true'>
+      //       <div class='modal-dialog' role='document'>
+      //                <div class='modal-content'>
+      //                  <div class='modal-header'>
+      //                    <h5 class='modal-title' id='exampleModalLabel'>Voulez-vous ".$user." le client ".$val->NOM_CLIENT." ?</h5>
+      //                    <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+      //                      <span aria-hidden='true'>&times;</span>
+      //                    </button>
+      //                  </div>
+      //                  <div class='modal-body'>
+                       
+      //                  </div>
+      //                  <div class='modal-footer'>
+      //                    <button type='button' class='btn btn-secondary' data-dismiss='modal'>Non</button>
+      //                    <a class='btn btn-danger btn-md' href='" . base_url('client/Client/traiter/'. md5($val->ID_CLIENT)) . "'>Oui</a>
+      //                  </div>
+      //                </div>
+      //              </div>
+      //            </div>";
+      //  $post[]=$action;
+       $data[] = $post;
+ 
+     }
+     $output = array(
+       "draw" => intval($_POST['draw']),
+       "recordsTotal" => $this->Model->all_data($query_principal),
+       "recordsFiltered" => $this->Model->filtrer($query_filter),
+       "data" => $data
+     );
+     echo json_encode($output);
+
+
+//     $ID_CONSULTATION_TYPE=$this->input->post('ID_CONSULTATION_TYPE');
+
+    
+
+
+//     $data['tconsultation'] = $this->Model->getListOrdertwo('consultation_type',array(),'DESCRIPTION'); 
+ 
+
+//     $data['ID_CONSULTATION_TYPE']=$ID_CONSULTATION_TYPE;
+      
+
+
+//       if (!empty($ID_CONSULTATION_TYPE)) {
+//         $data['ID_CONSULTATION_TYPE']=$ID_CONSULTATION_TYPE;
+//         $critaire2= ' AND ID_CONSULTATION_TYPE  = '.$ID_CONSULTATION_TYPE.' ';
+//       }   
+//       else{
+//         $ID_CONSULTATION_TYPE = 0;
+//         $data['ID_CONSULTATION_TYPE']= 0;
+//         $critaire2 = ' ';
+//       }
+
+
+
+
+      
+
+      
+//       $totals=$this->Model->getRequeteOne('SELECT COUNT(consultation_consultation.ID_CONSULTATION) AS NOMBRE, SUM(consultation_consultation.MONTANT_CONSULTATION) AS MONTANT_CONSULTATION, SUM(consultation_consultation.MONTANT_A_PAYER) AS MONTANT_A_PAYER FROM consultation_consultation JOIN masque_stucture_sanitaire ON masque_stucture_sanitaire.ID_STRUCTURE = consultation_consultation.ID_STRUCTURE WHERE consultation_consultation.STATUS_PAIEMENT = 0  '.$critaire.' '.$critaire2 );
+
+//       $data['TOTAL'] = 'Hopitaux concern&eacute;: '.$totals['NOMBRE'];
+  
+//       $tabledata=array();
+
+//       $result = array_merge($resultat, $resultatcentre);
+      
+//       foreach ($result as $key) 
+//          {
+
+     
+//      }
+
+
+    }
+
 
 
     public function apercu_liste($value='')

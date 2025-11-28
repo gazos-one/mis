@@ -48,7 +48,7 @@ public function liste()
  $order_by="  ORDER BY ID_MEMBRE";
  $groupby='GROUP BY ID_MEMBRE';
 
- $query_principal=" SELECT membre_membre.ID_MEMBRE, NOM, PRENOM, membre_groupe.NOM_GROUPE,TELEPHONE,CNI,CODE_AFILIATION,syst_categorie_assurance.PLAFOND_ANNUEL FROM `membre_membre` JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = membre_membre.ID_MEMBRE JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE JOIN membre_assurances ON membre_membre.ID_MEMBRE = membre_assurances.ID_MEMBRE JOIN syst_categorie_assurance ON syst_categorie_assurance.ID_CATEGORIE_ASSURANCE = membre_assurances.ID_CATEGORIE_ASSURANCE WHERE `IS_AFFILIE` = 0 AND membre_membre.STATUS=1 ";
+ $query_principal=" SELECT membre_membre.ID_MEMBRE, NOM, PRENOM, membre_groupe.NOM_GROUPE,TELEPHONE,CNI,CODE_AFILIATION,syst_categorie_assurance.PLAFOND_ANNUEL FROM `membre_membre` JOIN membre_groupe_membre ON membre_groupe_membre.ID_MEMBRE = membre_membre.ID_MEMBRE JOIN membre_groupe ON membre_groupe.ID_GROUPE = membre_groupe_membre.ID_GROUPE JOIN membre_assurances ON membre_membre.ID_MEMBRE = membre_assurances.ID_MEMBRE JOIN syst_categorie_assurance ON syst_categorie_assurance.ID_CATEGORIE_ASSURANCE = membre_assurances.ID_CATEGORIE_ASSURANCE join consultation_consultation on membre_membre.ID_MEMBRE= consultation_consultation.ID_MEMBRE join consultation_medicament on membre_membre.ID_MEMBRE= consultation_consultation.ID_MEMBRE  WHERE `IS_AFFILIE` = 0 AND membre_membre.STATUS=1 ";
  
  $query_secondaire = $query_principal . '  ' . $critaire . '  ' . $search . '  ' . $groupby . '  ' . $order_by . '   ' . $limit;
  $query_filter = $query_principal . ' ' . $critaire . '  ' . $search. ' ' . $groupby;
@@ -62,9 +62,9 @@ public function liste()
   $res=$this->Model->getRequeteOne('SELECT membre_groupe.`NOM_GROUPE` FROM `membre_groupe` JOIN membre_groupe_membre on membre_groupe.ID_GROUPE=membre_groupe_membre.ID_GROUPE WHERE 1 and membre_groupe_membre.ID_MEMBRE='.$key->ID_MEMBRE.'');
 
 
-  $consultation_affilier=$this->Model->getRequeteOne('SELECT m.CODE_PARENT, COUNT(DISTINCT c.ID_CONSULTATION) AS nb_consultations, COALESCE(SUM(c.MONTANT_A_PAYER), 0) AS M_CONSULTATION,membre_groupe.ID_GROUPE ,c.DATE_CONSULTATION FROM membre_membre m LEFT JOIN consultation_consultation c ON m.ID_MEMBRE = c.ID_MEMBRE JOIN membre_groupe_membre mgm ON mgm.ID_MEMBRE = m.ID_MEMBRE JOIN membre_groupe ON membre_groupe.ID_GROUPE = mgm.ID_GROUPE  WHERE c.TYPE_AFFILIE ='.$key->ID_MEMBRE.' AND c.ID_MEMBRE ='.$key->ID_MEMBRE.' AND YEAR(c.DATE_CONSULTATION) = "' .intval(date('Y')).'"');
+  $consultation_affilier=$this->Model->getRequeteOne('SELECT m.CODE_PARENT, COUNT(DISTINCT c.ID_CONSULTATION) AS nb_consultations, COALESCE(SUM(c.`MONTANT_CONSULTATION` - c.MONTANT_A_PAYER), 0) AS M_CONSULTATION,membre_groupe.ID_GROUPE ,c.DATE_CONSULTATION FROM membre_membre m LEFT JOIN consultation_consultation c ON m.ID_MEMBRE = c.ID_MEMBRE JOIN membre_groupe_membre mgm ON mgm.ID_MEMBRE = m.ID_MEMBRE JOIN membre_groupe ON membre_groupe.ID_GROUPE = mgm.ID_GROUPE  WHERE c.TYPE_AFFILIE ='.$key->ID_MEMBRE.' AND c.ID_MEMBRE ='.$key->ID_MEMBRE.' AND YEAR(c.DATE_CONSULTATION) = "' .intval(date('Y')).'"');
 
-  $consultation_ayant=$this->Model->getRequeteOne('SELECT m.CODE_PARENT, COUNT(DISTINCT c.ID_CONSULTATION) AS nb_consultations, COALESCE(SUM(c.MONTANT_A_PAYER), 0) AS M_CONSULTATION,membre_groupe.ID_GROUPE ,c.DATE_CONSULTATION FROM membre_membre m LEFT JOIN consultation_consultation c ON m.ID_MEMBRE = c.ID_MEMBRE JOIN membre_groupe_membre mgm ON mgm.ID_MEMBRE = m.ID_MEMBRE JOIN membre_groupe ON membre_groupe.ID_GROUPE = mgm.ID_GROUPE  WHERE c.TYPE_AFFILIE ='.$key->ID_MEMBRE.' AND c.ID_MEMBRE !='.$key->ID_MEMBRE.' AND YEAR(c.DATE_CONSULTATION) = "' .intval(date('Y')).'" ');
+  $consultation_ayant=$this->Model->getRequeteOne('SELECT m.CODE_PARENT, COUNT(DISTINCT c.ID_CONSULTATION) AS nb_consultations, COALESCE(SUM(c.`MONTANT_CONSULTATION` - c.MONTANT_A_PAYER), 0) AS M_CONSULTATION,membre_groupe.ID_GROUPE ,c.DATE_CONSULTATION FROM membre_membre m LEFT JOIN consultation_consultation c ON m.ID_MEMBRE = c.ID_MEMBRE JOIN membre_groupe_membre mgm ON mgm.ID_MEMBRE = m.ID_MEMBRE JOIN membre_groupe ON membre_groupe.ID_GROUPE = mgm.ID_GROUPE  WHERE c.TYPE_AFFILIE ='.$key->ID_MEMBRE.' AND c.ID_MEMBRE !='.$key->ID_MEMBRE.' AND YEAR(c.DATE_CONSULTATION) = "' .intval(date('Y')).'" ');
 
   $consultation_medicament_affilier=$this->Model->getRequeteOne('SELECT m.CODE_PARENT, COUNT(DISTINCT cm.ID_CONSULTATION_MEDICAMENT) AS nb_medicaments,COALESCE(SUM(cm.MONTANT_A_PAYE_MIS), 0) AS M_MEDICAMENT,membre_groupe.ID_GROUPE,cm.DATE_CONSULTATION FROM membre_membre m LEFT JOIN consultation_medicament cm ON m.ID_MEMBRE = cm.ID_MEMBRE JOIN membre_groupe_membre mgm ON mgm.ID_MEMBRE = m.ID_MEMBRE JOIN membre_groupe ON membre_groupe.ID_GROUPE = mgm.ID_GROUPE  WHERE  cm.TYPE_AFFILIE ='.$key->ID_MEMBRE.' AND cm.ID_MEMBRE ='.$key->ID_MEMBRE.' AND YEAR(cm.DATE_CONSULTATION) = "' . intval(date('Y')).'" ');
 
@@ -98,6 +98,7 @@ public function liste()
 
 
   $chambr=array();
+   if ($C_TOTAL > $plafond) {
   $chambr[]=$key->ID_MEMBRE;
   $chambr[]=$key->NOM.' '.$key->PRENOM;
   $chambr[]=$key->CODE_AFILIATION;
@@ -108,10 +109,13 @@ public function liste()
   $chambr[]=number_format($plafond, 0, ',', ' ');
   $chambr[]=$plafonner;
 
+ $tabledata[]=$chambr;
+}
 
 
 
-  $tabledata[]=$chambr;
+
+ 
 
 }
 
